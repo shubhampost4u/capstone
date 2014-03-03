@@ -12,11 +12,15 @@ import simulation.ServerWithBF;
  *
  */
 public class BloomFilter {
+	
 	/** Total clients in the system */
 	protected int nClients;
 	
 	/** Cache size of each client */
 	protected int clientCacheSize;
+	
+	/** Size of bloom filter */
+	protected int bloomFilterSize;
 	
 	/** Cache size of server */
 	protected int serverCacheSize;
@@ -54,11 +58,13 @@ public class BloomFilter {
 	 * @param diskToCacheTicks ticks for disk reference
 	 * @param networkHopTicks ticks for network transfer
 	 */
-	public BloomFilter(int nClients, int clientCacheSize, int serverCacheSize,
-			int serverDiskSize, int totalRequests, int cacheReferenceTicks,
-			int diskToCacheTicks, int networkHopTicks) {
+	public BloomFilter(int nClients, int clientCacheSize, int bloomFilterSize,
+			int serverCacheSize, int serverDiskSize, int totalRequests,
+			int cacheReferenceTicks, int diskToCacheTicks,
+			int networkHopTicks) {
 		this.nClients = nClients;
 		this.clientCacheSize = clientCacheSize;
+		this.bloomFilterSize = bloomFilterSize;
 		this.serverCacheSize = serverCacheSize;
 		this.serverDiskSize = serverDiskSize;
 		this.totalRequests = totalRequests;
@@ -81,7 +87,7 @@ public class BloomFilter {
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
 		for (int i = 0; i < nClients; i++) {
-			clients[i] = new ClientWithBF(clientCacheSize, i);
+			clients[i] = new ClientWithBF(clientCacheSize, bloomFilterSize, i);
 			clients[i].cacheWarmUp(clientCaches[i]);
 		}
 	}

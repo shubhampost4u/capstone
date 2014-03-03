@@ -24,11 +24,13 @@ public class ImportanceAwareBloomFilter extends BloomFilter {
 	 * @param diskToCacheTicks ticks for disk reference
 	 * @param networkHopTicks ticks for network transfer
 	 */
-	public ImportanceAwareBloomFilter(int nClients, int clientCacheSize,
-			int serverCacheSize, int serverDiskSize, int totalRequests,
-			int cacheReferenceTicks, int diskToCacheTicks, int networkHopTicks) {
-		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize,
-				totalRequests, networkHopTicks, networkHopTicks, networkHopTicks);
+	public ImportanceAwareBloomFilter(int nClients, int clientCacheSize, 
+			int bloomFilterSize, int serverCacheSize, int serverDiskSize,
+			int totalRequests, int cacheReferenceTicks, int diskToCacheTicks,
+			int networkHopTicks) {
+		super(nClients, clientCacheSize, bloomFilterSize, serverCacheSize,
+				serverDiskSize, totalRequests, networkHopTicks, networkHopTicks,
+				networkHopTicks);
 		clients = new ClientWithIBF[nClients];
 	}
 	

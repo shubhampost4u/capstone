@@ -34,6 +34,9 @@ public class Simulator {
 	/** Cache size of each client */
 	private int clientCacheSize;
 	
+	/** */
+	private int bloomFilterSize;
+	
 	/** Cache size of server */
 	private int serverCacheSize;
 	
@@ -93,6 +96,8 @@ public class Simulator {
 				getProperty("nClients"));
 		clientCacheSize = Integer.parseInt(properties.
 				getProperty("clientCacheSize"));
+		bloomFilterSize = Integer.parseInt(properties.
+				getProperty("bloomFilterSize"));
 		serverCacheSize = Integer.parseInt(properties.
 				getProperty("serverCacheSize"));
 		serverDiskSize = Integer.parseInt(properties.
@@ -180,15 +185,16 @@ public class Simulator {
 	 */
 	private void bloomFilterComparison() {
 		BloomFilter bf = new BloomFilter(nClients, clientCacheSize, 
-				serverCacheSize, serverDiskSize, totalRequests, 
+				bloomFilterSize, serverCacheSize, serverDiskSize, totalRequests, 
 				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-		BloomFilter ibf = new ImportanceAwareBloomFilter(nClients,
-				clientCacheSize, serverCacheSize, serverDiskSize, totalRequests,
-				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
+//		BloomFilter ibf = new ImportanceAwareBloomFilter(nClients,
+//				clientCacheSize, bloomFilterSize, serverCacheSize,
+//				serverDiskSize, totalRequests, cacheReferenceTicks,
+//				diskToCacheTicks, networkHopTicks);
 		this.warmup();
 		
 		bf.warmup(clientCaches, serverCache, serverDisk);		
-		ibf.warmup(clientCaches, serverCache, serverDisk);
+//		ibf.warmup(clientCaches, serverCache, serverDisk);
 		
 		// get the result of the false positives for both the algorithms
 		// method not complete
