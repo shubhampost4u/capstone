@@ -1,5 +1,7 @@
 package simulation;
 
+import java.math.BigInteger;
+
 /**
  * Represents a server for simulation
  * 
@@ -23,6 +25,8 @@ public class Server {
 	/** Server id */
 	protected long serverId;
 	
+	protected int bloomFilterSize;
+	
 	/**
 	 * Creates a server object with cache size, disk size and id
 	 * 
@@ -30,10 +34,12 @@ public class Server {
 	 * @param diskSize size of disk component
 	 * @param serverId server id
 	 */
-	public Server(int cacheSize, int diskSize, long serverId) {
+	public Server(int cacheSize, int bloomFilterSize, 
+			int diskSize, long serverId) {
 		this.cacheSize = cacheSize;
 		this.diskSize = diskSize;
 		this.serverId = serverId;
+		this.bloomFilterSize = bloomFilterSize;
 		cache = new Cache(cacheSize);
 		disk = new Storage(diskSize);
 	}
@@ -45,12 +51,31 @@ public class Server {
 	 * @return true/false
 	 */
 	public boolean cacheWarmUp(Block[] contents) {
-		if(this.cacheSize != contents.length) {
-			return false;
-		}
+//		if(this.cacheSize != contents.length) {
+//			return false;
+//		}
 		cache.fillStorageBlocks(contents);
 		return true;
 	}
+	
+	public boolean isMember(String data) {
+		return false;
+	}
+	
+	protected int[] getHashIndexes(String block) {
+		int[] indexes = new int[5];
+		BigInteger bfSize = 
+				new BigInteger(new Integer(bloomFilterSize).toString());
+		DataHash hash = new DataHash(block);
+		indexes[0] = hash.sha1().mod(bfSize).intValue();
+		indexes[1] =  hash.md5().mod(bfSize).intValue();
+		indexes[2] = hash.sha256().mod(bfSize).intValue();
+		indexes[3] = hash.sha384().mod(bfSize).intValue();
+		indexes[4] = hash.djb2().mod(bfSize).intValue();
+
+		return indexes;
+	}
+	
 	
 	/**
 	 * Fill the disk with data blocks before starting the experiment

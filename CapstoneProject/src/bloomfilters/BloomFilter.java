@@ -1,5 +1,9 @@
 package bloomfilters;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import simulation.Block;
 import simulation.Client;
 import simulation.ClientWithBF;
@@ -38,13 +42,15 @@ public class BloomFilter {
 	protected int networkHopTicks;
 	
 	/** Total requests to be handled*/
-	protected int totalRequests;
+//	protected int totalRequests;
 	
 	/** Clients to form the network */
 	protected Client[] clients;
 	
 	/** Server to form network */
 	protected Server server;
+	
+	protected long falsePositive;
 	
 	/** 
 	 * Create object for executing bloom filter algorithm
@@ -59,18 +65,18 @@ public class BloomFilter {
 	 * @param networkHopTicks ticks for network transfer
 	 */
 	public BloomFilter(int nClients, int clientCacheSize, int bloomFilterSize,
-			int serverCacheSize, int serverDiskSize, int totalRequests,
-			int cacheReferenceTicks, int diskToCacheTicks,
-			int networkHopTicks) {
+			int serverCacheSize, int serverDiskSize, int cacheReferenceTicks,
+			int diskToCacheTicks, int networkHopTicks) {
 		this.nClients = nClients;
 		this.clientCacheSize = clientCacheSize;
 		this.bloomFilterSize = bloomFilterSize;
 		this.serverCacheSize = serverCacheSize;
 		this.serverDiskSize = serverDiskSize;
-		this.totalRequests = totalRequests;
+//		this.totalRequests = totalRequests;
 		this.cacheReferenceTicks = cacheReferenceTicks;
 		this.diskToCacheTicks = diskToCacheTicks;
 		this.networkHopTicks = networkHopTicks;
+		this.falsePositive = 0;
 	}
 
 	/**
@@ -83,7 +89,8 @@ public class BloomFilter {
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
 		clients = new Client[nClients];
-		server = new ServerWithBF(serverCacheSize, serverDiskSize, 1);
+		server = new ServerWithBF(serverCacheSize, bloomFilterSize,
+				serverDiskSize, 1);
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
 		for (int i = 0; i < nClients; i++) {
@@ -92,12 +99,38 @@ public class BloomFilter {
 		}
 	}
 
-	/**
-	 * Get the false positives encountered during the experiment
-	 * @return false positives
-	 */
-	public int getFalsePositives() {
-		int falsePositives = 0;
-		return falsePositives;
+	public long executeExperiment(List<String> requests) {
+		Random random = new Random();
+		for(String request : requests) {
+			List<Integer> coveredClients = new ArrayList<Integer>();
+			while(coveredClients.size() != nClients) {
+				int clientIndex = random.nextInt() % nClients;
+				if(clientIndex < 0) {
+					clientIndex *= -1;
+				}
+				if(!coveredClients.contains(clientIndex)) {
+					if(clients[clientIndex].isMember(request)) {
+						if(!clients[clientIndex].cacheLookup(request)) {
+							falsePositive += 1;
+						} else {
+							break;
+						}
+					}
+					coveredClients.add(clientIndex);
+				}
+			}
+			if(coveredClients.size() == nClients) {
+				if(server.isMember(request)) {
+					if(!server.cacheLookup(null)) {
+						falsePositive += 1;
+					}
+				}
+			}
+		}
+		return falsePositive;
+	}
+	
+	public void setFalsePositive(int falsePositive) {
+		this.falsePositive = falsePositive;
 	}
 }

@@ -38,17 +38,6 @@ public class ClientWithBF extends Client {
 		return true;
 	}
 	
-	/**
-	 * Locate the data in the cache blocks
-	 * 
-	 * @param data to be located in the cache
-	 * @return true/false
-	 */
-	public boolean cacheLookup(String data) {
-		return cache.lookup(data);
-	}
-	
-	
 	private int[] getHashIndexes(String block) {
 		int[] indexes = new int[5];
 		BigInteger bfSize = 

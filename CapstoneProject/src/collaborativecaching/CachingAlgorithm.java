@@ -85,9 +85,9 @@ public class CachingAlgorithm {
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
 		clients = new Client[nClients];
-		server = new Server(serverCacheSize, serverDiskSize, 1);
-		server.cacheWarmUp(serverCache);
-		server.diskWarmUp(serverDisk);
+//		server = new Server(serverCacheSize, serverDiskSize, 1);
+//		server.cacheWarmUp(serverCache);
+//		server.diskWarmUp(serverDisk);
 		
 		for(int i = 0; i < nClients; i++) {
 			clients[i] = new Client(clientCacheSize, i);

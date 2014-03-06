@@ -26,10 +26,10 @@ public class ImportanceAwareBloomFilter extends BloomFilter {
 	 */
 	public ImportanceAwareBloomFilter(int nClients, int clientCacheSize, 
 			int bloomFilterSize, int serverCacheSize, int serverDiskSize,
-			int totalRequests, int cacheReferenceTicks, int diskToCacheTicks,
+			int cacheReferenceTicks, int diskToCacheTicks,
 			int networkHopTicks) {
 		super(nClients, clientCacheSize, bloomFilterSize, serverCacheSize,
-				serverDiskSize, totalRequests, networkHopTicks, networkHopTicks,
+				serverDiskSize, networkHopTicks, networkHopTicks,
 				networkHopTicks);
 		clients = new ClientWithIBF[nClients];
 	}
@@ -44,22 +44,18 @@ public class ImportanceAwareBloomFilter extends BloomFilter {
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
 		clients = new Client[nClients];
-		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
+		server = new ServerWithIBF(serverCacheSize, bloomFilterSize,
+				serverDiskSize, 1);
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
 		
 		for(int i = 0; i < nClients; i++) {
-			clients[i] = new ClientWithIBF(clientCacheSize, i);
+			clients[i] = new ClientWithIBF(clientCacheSize, bloomFilterSize, i);
 			clients[i].cacheWarmUp(clientCaches[i]);
 		}
 	}
 	
-	/**
-	 * Get the false positives encountered during the experiment
-	 * @return false positives
-	 */
-	public int getFalsePositives() {
-		int falsePositives = 0;
-		return falsePositives;
-	}
+//	public long executeExperiment(List<String> requests) {
+//		return falsePositive;
+//	}
 }

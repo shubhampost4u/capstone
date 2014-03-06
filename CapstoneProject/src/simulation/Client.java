@@ -35,9 +35,9 @@ public class Client {
 	 * @return true/false
 	 */
 	public boolean cacheWarmUp(Block[] contents) {
-		if(this.cacheSize != contents.length) {
-			return false;
-		}
+//		if(this.cacheSize != contents.length) {
+//			return false;
+//		}
 		cache.fillStorageBlocks(contents);
 		return true;
 	}
@@ -49,7 +49,10 @@ public class Client {
 	 * @return true/false
 	 */
 	public boolean cacheLookup(String data) {
-		// addd up lookup cost
+		return cache.lookup(data);
+	}
+	
+	public boolean isMember(String data) {
 		return false;
 	}
 	

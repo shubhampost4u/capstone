@@ -30,7 +30,7 @@ public class GreedyForwarding extends CachingAlgorithm {
 				totalRequests, cacheReferenceTicks, diskToCacheTicks,
 				networkHopTicks);
 		clients = new Client[nClients];
-		server = new Server(serverCacheSize, serverDiskSize, 1);
+//		server = new Server(serverCacheSize, serverDiskSize, 1);
 	}
 
 	@Override

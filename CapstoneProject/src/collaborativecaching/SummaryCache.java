@@ -31,7 +31,7 @@ public class SummaryCache extends CachingAlgorithm {
 				totalRequests, cacheReferenceTicks, diskToCacheTicks,
 				networkHopTicks);
 		clients = new ClientWithIBF[nClients];
-		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
+//		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
 	}
 	
 	/**
@@ -44,13 +44,13 @@ public class SummaryCache extends CachingAlgorithm {
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
 		clients = new Client[nClients];
-		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
-		server.cacheWarmUp(serverCache);
-		server.diskWarmUp(serverDisk);
+//		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
+//		server.cacheWarmUp(serverCache);
+//		server.diskWarmUp(serverDisk);
 		
 		for(int i = 0; i < nClients; i++) {
-			clients[i] = new ClientWithIBF(clientCacheSize, i);
-			clients[i].cacheWarmUp(clientCaches[i]);
+//			clients[i] = new ClientWithIBF(clientCacheSize, i);
+//			clients[i].cacheWarmUp(clientCaches[i]);
 		}
 	}
 	@Override
