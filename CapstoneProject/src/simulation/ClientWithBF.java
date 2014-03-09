@@ -13,6 +13,7 @@ public class ClientWithBF extends Client {
 	/** Array representing bloom filter */
 	private int[] bloomFilter;
 	
+	/** Size of bloom filter */
 	private int bloomFilterSize;
 	
 	
@@ -27,7 +28,13 @@ public class ClientWithBF extends Client {
 		this.bloomFilterSize = bloomFilterSize;
 	}
 	
-	
+	/**
+	 * Checks if the data is present in bloom filter. Get k indices by getting
+	 * the k hash values of the data and then check if value at these k indices
+	 * are non zero
+	 * 
+	 * @param data query to fired
+	 */
 	public boolean isMember(String data) {
 		int[] result = getHashIndexes(data);
 		for(int i : result) {
@@ -38,6 +45,28 @@ public class ClientWithBF extends Client {
 		return true;
 	}
 	
+	/**
+	 * Fills the cache contents before starting the experiment
+	 */
+	public boolean cacheWarmUp(Block[] contents) {
+		super.cacheWarmUp(contents);
+		
+		for(Block block : contents) {
+			int[] indexes = getHashIndexes(block.getData());
+			for(int i : indexes) {
+				bloomFilter[i] = 1;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Gets the hash values of block by giving this data as input to k hash
+	 * functions
+	 *  
+	 * @param block to be stored in cache
+	 * @return array of indices in bloom filter
+	 */
 	private int[] getHashIndexes(String block) {
 		int[] indexes = new int[5];
 		BigInteger bfSize = 
@@ -50,17 +79,5 @@ public class ClientWithBF extends Client {
 		indexes[4] = hash.djb2().mod(bfSize).intValue();
 
 		return indexes;
-	}
-	
-	public boolean cacheWarmUp(Block[] contents) {
-		super.cacheWarmUp(contents);
-		
-		for(Block block : contents) {
-			int[] indexes = getHashIndexes(block.getData());
-			for(int i : indexes) {
-				bloomFilter[i] = 1;
-			}
-		}
-		return true;
 	}
 }

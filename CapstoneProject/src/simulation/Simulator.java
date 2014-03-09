@@ -1,14 +1,12 @@
 package simulation;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -56,13 +54,13 @@ public class Simulator {
 	/** Ticks required for transferring data over network */
 	private int networkHopTicks;
 
-	/** Total requests to be handled */
+	/** Lower bound on total requests to be handled */
 	private int totalRequestLow;
 
-	/** Total requests to be handled */
+	/** Upper bound on total requests to be handled */
 	private int totalRequestHigh;
 
-	/** Total requests to be handled */
+	/** Ramp up for total requests to be handled */
 	private int totalRequestRampUp;
 
 	/** Type of experiment */
@@ -102,7 +100,6 @@ public class Simulator {
 			throws FileNotFoundException, IOException {
 		Properties properties = new Properties();
 		properties.load(new FileInputStream(filename));
-		// ResourceBundle resource = ResourceBundle.getBundle(filename);
 		nClients = Integer.parseInt(properties.getProperty("nClients"));
 		clientCacheSize = Integer.parseInt(properties
 				.getProperty("clientCacheSize"));
@@ -195,7 +192,11 @@ public class Simulator {
 	}
 
 	/**
-	 * Experiment to compare Bloom Filter with Importance Aware Bloom Filter
+	 * Experiment to compare Bloom Filter with Importance Aware Bloom Filter.
+	 * Initializes the two bloom filter objects for experiment execution.
+	 * Distributes data evenly between clients. Clients with same client id
+	 * will have same cache contents in BF and IBF. Executes the experiment 
+	 * with different number of requests and saves the result in file.
 	 */
 	private void bloomFilterComparison() {
 		File resultFile = new File(dataFile + ".out");
@@ -207,7 +208,7 @@ public class Simulator {
 				clientCacheSize, bloomFilterSize, serverCacheSize,
 				serverDiskSize, cacheReferenceTicks, diskToCacheTicks,
 				networkHopTicks);
-		this.warmup();
+		warmup();
 		bf.warmup(clientCaches, serverCache, serverDisk);
 		ibf.warmup(clientCaches, serverCache, serverDisk);
 		System.out.println("Cache Warmup complete");
@@ -219,8 +220,8 @@ public class Simulator {
 				writer.write(i + "," + bf.executeExperiment(testRequests) + ","
 						+ ibf.executeExperiment(testRequests) + "\n");
 				i += totalRequestRampUp;
-				bf.setFalsePositive(0);
-				ibf.setFalsePositive(0);
+				bf.resetFalsePositive();
+				ibf.resetFalsePositive();
 			}
 			System.out.println("Experiment Completed");
 		} catch (IOException e) {
@@ -235,6 +236,12 @@ public class Simulator {
 		}
 	}
 
+	/**
+	 * Randomly selects data from the data list for requesting.
+	 * 
+	 * @param totalRequests total data needed
+	 * @return List of data from the list
+	 */
 	private List<String> getRequests(int totalRequests) {
 		List<String> requests = new ArrayList<String>();
 		Random random = new Random();
@@ -254,35 +261,37 @@ public class Simulator {
 	 * Forwarding
 	 */
 	private void cachingComparison() {
-//		CachingAlgorithm traceObject = new CachingAlgorithm(nClients,
-//				clientCacheSize, serverCacheSize, serverDiskSize,
-//				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-//				networkHopTicks);
-//
-//		CachingAlgorithm nChance = new NChance(nClients, clientCacheSize,
-//				serverCacheSize, serverDiskSize, totalRequests,
-//				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-//
-//		CachingAlgorithm robinhood = new RobinHood(nClients, clientCacheSize,
-//				serverCacheSize, serverDiskSize, totalRequests,
-//				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-//
-//		CachingAlgorithm greedy = new GreedyForwarding(nClients,
-//				clientCacheSize, serverCacheSize, serverDiskSize,
-//				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-//				networkHopTicks);
-//
-//		CachingAlgorithm summaryCache = new SummaryCache(nClients,
-//				clientCacheSize, serverCacheSize, serverDiskSize,
-//				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-//				networkHopTicks);
-//
-//		this.warmup();
-//		traceObject.warmup(clientCaches, serverCache, serverDisk);
-//		nChance.warmup(clientCaches, serverCache, serverDisk);
-//		robinhood.warmup(clientCaches, serverCache, serverDisk);
-//		greedy.warmup(clientCaches, serverCache, serverDisk);
-//		summaryCache.warmup(clientCaches, serverCache, serverDisk);
+		int totalRequests = 0;
+		
+		CachingAlgorithm traceObject = new CachingAlgorithm(nClients,
+				clientCacheSize, serverCacheSize, serverDiskSize,
+				totalRequests, cacheReferenceTicks, diskToCacheTicks,
+				networkHopTicks);
+
+		CachingAlgorithm nChance = new NChance(nClients, clientCacheSize,
+				serverCacheSize, serverDiskSize, totalRequests,
+				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
+
+		CachingAlgorithm robinhood = new RobinHood(nClients, clientCacheSize,
+				serverCacheSize, serverDiskSize, totalRequests,
+				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
+
+		CachingAlgorithm greedy = new GreedyForwarding(nClients,
+				clientCacheSize, serverCacheSize, serverDiskSize,
+				totalRequests, cacheReferenceTicks, diskToCacheTicks,
+				networkHopTicks);
+
+		CachingAlgorithm summaryCache = new SummaryCache(nClients,
+				clientCacheSize, serverCacheSize, serverDiskSize,
+				totalRequests, cacheReferenceTicks, diskToCacheTicks,
+				networkHopTicks);
+
+		this.warmup();
+		traceObject.warmup(clientCaches, serverCache, serverDisk);
+		nChance.warmup(clientCaches, serverCache, serverDisk);
+		robinhood.warmup(clientCaches, serverCache, serverDisk);
+		greedy.warmup(clientCaches, serverCache, serverDisk);
+		summaryCache.warmup(clientCaches, serverCache, serverDisk);
 
 		// get the result of traces and algorithms
 		// method not complete

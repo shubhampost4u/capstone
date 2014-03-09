@@ -54,8 +54,4 @@ public class ImportanceAwareBloomFilter extends BloomFilter {
 			clients[i].cacheWarmUp(clientCaches[i]);
 		}
 	}
-	
-//	public long executeExperiment(List<String> requests) {
-//		return falsePositive;
-//	}
 }

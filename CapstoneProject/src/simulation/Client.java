@@ -35,9 +35,9 @@ public class Client {
 	 * @return true/false
 	 */
 	public boolean cacheWarmUp(Block[] contents) {
-//		if(this.cacheSize != contents.length) {
-//			return false;
-//		}
+		if(this.cacheSize != contents.length) {
+			return false;
+		}
 		cache.fillStorageBlocks(contents);
 		return true;
 	}
@@ -52,6 +52,13 @@ public class Client {
 		return cache.lookup(data);
 	}
 	
+	/**
+	 * Checks if the data is present in bloom filter. Get k indices by getting
+	 * the k hash values of the data and then check if value at these k indices
+	 * are non zero
+	 * 
+	 * @param data query to fired
+	 */
 	public boolean isMember(String data) {
 		return false;
 	}
