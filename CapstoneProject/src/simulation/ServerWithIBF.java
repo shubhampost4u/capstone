@@ -36,7 +36,7 @@ public class ServerWithIBF extends Server {
 	public ServerWithIBF(int cacheSize, int bloomFilterSize,
 			int diskSize, long serverId) {
 		super(cacheSize, diskSize, serverId);
-		iBloomFilter = new int[cacheSize];
+		iBloomFilter = new int[bloomFilterSize];
 		this.bloomFilterSize = bloomFilterSize;
 	}
 	

@@ -16,21 +16,9 @@ public class ImportanceAwareBloomFilter extends BloomFilter {
 	 * Create object for executing importance aware bloom filter algorithm
 	 * 
 	 * @param nClients total clients
-	 * @param clientCacheSize client cache size
-	 * @param serverCacheSize server cache size
-	 * @param serverDiskSize server disk size
-	 * @param totalRequests total requests in the server
-	 * @param cacheReferenceTicks ticks for cache reference
-	 * @param diskToCacheTicks ticks for disk reference
-	 * @param networkHopTicks ticks for network transfer
 	 */
-	public ImportanceAwareBloomFilter(int nClients, int clientCacheSize, 
-			int bloomFilterSize, int serverCacheSize, int serverDiskSize,
-			int cacheReferenceTicks, int diskToCacheTicks,
-			int networkHopTicks) {
-		super(nClients, clientCacheSize, bloomFilterSize, serverCacheSize,
-				serverDiskSize, networkHopTicks, networkHopTicks,
-				networkHopTicks);
+	public ImportanceAwareBloomFilter(int nClients) {
+		super(nClients);
 		clients = new ClientWithIBF[nClients];
 	}
 	

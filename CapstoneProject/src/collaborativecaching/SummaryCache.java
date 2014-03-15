@@ -12,6 +12,8 @@ import simulation.ServerWithIBF;
  */
 public class SummaryCache extends CachingAlgorithm {
 
+	private int bloomFilterSize;
+	
 	/** 
 	 * Create object for executing Summary Cache algorithm
 	 * 
@@ -25,13 +27,14 @@ public class SummaryCache extends CachingAlgorithm {
 	 * @param networkHopTicks ticks for network transfer
 	 */
 	public SummaryCache(int nClients, int clientCacheSize, int serverCacheSize,
-			int serverDiskSize, int totalRequests, int cacheReferenceTicks,
-			int diskToCacheTicks, int networkHopTicks) {
+			int serverDiskSize, int totalRequests, int bloomFilterSize,
+			int cacheReferenceTicks, int diskToCacheTicks,
+			int networkHopTicks) {
 		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize,
 				totalRequests, cacheReferenceTicks, diskToCacheTicks,
 				networkHopTicks);
 		clients = new ClientWithIBF[nClients];
-//		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
+		this.bloomFilterSize = bloomFilterSize;
 	}
 	
 	/**
@@ -44,19 +47,19 @@ public class SummaryCache extends CachingAlgorithm {
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
 		clients = new Client[nClients];
-//		server = new ServerWithIBF(serverCacheSize, serverDiskSize, 1);
-//		server.cacheWarmUp(serverCache);
-//		server.diskWarmUp(serverDisk);
+		server = new ServerWithIBF(serverCacheSize, bloomFilterSize,
+				serverDiskSize, 1);
+		server.cacheWarmUp(serverCache);
+		server.diskWarmUp(serverDisk);
 		
 		for(int i = 0; i < nClients; i++) {
-//			clients[i] = new ClientWithIBF(clientCacheSize, i);
-//			clients[i].cacheWarmUp(clientCaches[i]);
+			clients[i] = new ClientWithIBF(clientCacheSize, bloomFilterSize, i);
+			clients[i].cacheWarmUp(clientCaches[i]);
 		}
 	}
 	@Override
 	public void runAlgorithm() {
 		// TODO Auto-generated method stub
-		
 	}
 
 }

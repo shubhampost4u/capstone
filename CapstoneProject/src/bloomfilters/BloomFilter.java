@@ -31,15 +31,6 @@ public class BloomFilter {
 	
 	/** disk size of server */
 	protected int serverDiskSize;
-	
-	/** Ticks required for cache reference */
-	protected int cacheReferenceTicks;
-	
-	/** Ticks required for disk reference */
-	protected int diskToCacheTicks;
-	
-	/** Ticks required for transferring data over network */
-	protected int networkHopTicks;
 		
 	/** Clients to form the network */
 	protected Client[] clients;
@@ -54,29 +45,22 @@ public class BloomFilter {
 	 * Create object for executing bloom filter algorithm
 	 * 
 	 * @param nClients total clients
-	 * @param clientCacheSize client cache size
-	 * @param serverCacheSize server cache size
-	 * @param serverDiskSize server disk size
-	 * @param totalRequests total requests in the server
-	 * @param cacheReferenceTicks ticks for cache reference
-	 * @param diskToCacheTicks ticks for disk reference
-	 * @param networkHopTicks ticks for network transfer
 	 */
-	public BloomFilter(int nClients, int clientCacheSize, int bloomFilterSize,
-			int serverCacheSize, int serverDiskSize, int cacheReferenceTicks,
-			int diskToCacheTicks, int networkHopTicks) {
+	public BloomFilter(int nClients) {
 		this.nClients = nClients;
-		this.clientCacheSize = clientCacheSize;
-		this.bloomFilterSize = bloomFilterSize;
-		this.serverCacheSize = serverCacheSize;
-		this.serverDiskSize = serverDiskSize;
-//		this.totalRequests = totalRequests;
-		this.cacheReferenceTicks = cacheReferenceTicks;
-		this.diskToCacheTicks = diskToCacheTicks;
-		this.networkHopTicks = networkHopTicks;
 		this.falsePositive = 0;
 	}
 
+	
+	public BloomFilter setupParameters(int clientCacheSize, int serverCacheSize,
+			int serverDiskSize, int bloomFilterSize) {
+		this.clientCacheSize = clientCacheSize;
+		this.serverCacheSize = serverCacheSize;
+		this.serverDiskSize = serverDiskSize;
+		this.bloomFilterSize = bloomFilterSize;
+		return this;
+	}
+	
 	/**
 	 * Fill the clients/server cache and disk before executing the experiment
 	 * 

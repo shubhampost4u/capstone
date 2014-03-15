@@ -25,7 +25,7 @@ public class ServerWithBF extends Server{
 	public ServerWithBF(int cacheSize, int bloomFilterSize,
 			int diskSize, long serverId) {
 		super(cacheSize, diskSize, serverId);
-		bloomFilter = new int[cacheSize];
+		bloomFilter = new int[bloomFilterSize];
 		this.bloomFilterSize = bloomFilterSize;
 	}
 	

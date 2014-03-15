@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -34,14 +36,12 @@ public class Simulator {
 	private int nClients;
 
 	/** Cache size of each client */
-	private int clientCacheSize;
-
-	/** */
-	private int bloomFilterSize;
-
-	/** Cache size of server */
-	private int serverCacheSize;
-
+	private int cacheSizeLow;
+	
+	private int cacheSizeHigh;
+	
+	private int cacheSizeRampUp;
+	
 	/** disk size of server */
 	private int serverDiskSize;
 
@@ -65,6 +65,8 @@ public class Simulator {
 
 	/** Type of experiment */
 	private int experimentType;
+	
+
 
 	/** File containing data to be added to the client/server storage */
 	private String dataFile;
@@ -101,12 +103,12 @@ public class Simulator {
 		Properties properties = new Properties();
 		properties.load(new FileInputStream(filename));
 		nClients = Integer.parseInt(properties.getProperty("nClients"));
-		clientCacheSize = Integer.parseInt(properties
-				.getProperty("clientCacheSize"));
-		bloomFilterSize = Integer.parseInt(properties
-				.getProperty("bloomFilterSize"));
-		serverCacheSize = Integer.parseInt(properties
-				.getProperty("serverCacheSize"));
+		cacheSizeLow = Integer.parseInt(properties
+				.getProperty("cacheSizeLow"));
+		cacheSizeHigh = Integer.parseInt(properties
+				.getProperty("cacheSizeHigh"));
+		cacheSizeRampUp = Integer.parseInt(properties
+				.getProperty("cacheSizeRampUp"));
 		serverDiskSize = Integer.parseInt(properties
 				.getProperty("serverDiskSize"));
 		cacheReferenceTicks = Integer.parseInt(properties
@@ -124,10 +126,6 @@ public class Simulator {
 		experimentType = Integer.parseInt(properties
 				.getProperty("experimentType"));
 		dataFile = properties.getProperty("dataFile");
-
-		clientCaches = new Block[nClients][clientCacheSize];
-		serverCache = new Block[serverCacheSize];
-		serverDisk = new Block[serverDiskSize];
 	}
 
 	/**
@@ -164,11 +162,6 @@ public class Simulator {
 	 * Check the experiment parameters and initialize experiment accordingly
 	 */
 	public void initializeExperiment() {
-		if (!parameterSanityCheck()) {
-			System.err.println("data in the file not enough to fill all"
-					+ "the storage");
-			return;
-		}
 		if (this.experimentType == 1) {
 			bloomFilterComparison();
 		} else if (this.experimentType == 2) {
@@ -179,19 +172,6 @@ public class Simulator {
 	}
 
 	/**
-	 * Checks if there is enough data to be filled in all the caches and disk
-	 * 
-	 * @return true/false
-	 */
-	private boolean parameterSanityCheck() {
-		if (this.dataList.size() >= ((this.nClients * this.clientCacheSize)
-				+ this.serverCacheSize + this.serverDiskSize)) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * Experiment to compare Bloom Filter with Importance Aware Bloom Filter.
 	 * Initializes the two bloom filter objects for experiment execution.
 	 * Distributes data evenly between clients. Clients with same client id
@@ -199,41 +179,93 @@ public class Simulator {
 	 * with different number of requests and saves the result in file.
 	 */
 	private void bloomFilterComparison() {
-		File resultFile = new File(dataFile + ".out");
-		FileWriter writer = null;
-		BloomFilter bf = new BloomFilter(nClients, clientCacheSize,
-				bloomFilterSize, serverCacheSize, serverDiskSize,
-				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-		BloomFilter ibf = new ImportanceAwareBloomFilter(nClients,
-				clientCacheSize, bloomFilterSize, serverCacheSize,
-				serverDiskSize, cacheReferenceTicks, diskToCacheTicks,
-				networkHopTicks);
-		warmup();
-		bf.warmup(clientCaches, serverCache, serverDisk);
-		ibf.warmup(clientCaches, serverCache, serverDisk);
-		System.out.println("Cache Warmup complete");
-		System.out.println("Experiment Started");
+		BloomFilter bf = new BloomFilter(nClients);
+		BloomFilter ibf = new ImportanceAwareBloomFilter(nClients);
 		try {
-			writer = new FileWriter(resultFile, true);
-			for (int i = totalRequestLow; i <= totalRequestHigh;) {
-				List<String> testRequests = getRequests(i);
-				writer.write(i + "," + bf.executeExperiment(testRequests) + ","
-						+ ibf.executeExperiment(testRequests) + "\n");
-				i += totalRequestRampUp;
+			variableRequests(bf, ibf);
+			variableBloomFilterSize(bf, ibf);
+			System.out.println("Experiment Complete");
+		} catch(IOException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
+	/**
+	 * 
+	 * @param filename
+	 * @return
+	 */
+	private String getFileNameWithoutExt(String filename) {
+				
+		return dataFile.replaceFirst("[.][^.]+$", "");
+	}
+	
+	/**
+	 * 
+	 * @param bf
+	 * @param ibf
+	 * @throws IOException
+	 */
+	private void variableBloomFilterSize(BloomFilter bf, BloomFilter ibf) 
+			throws IOException {
+		int cacheSize = cacheSizeLow;
+		File resultFile = new File(getFileNameWithoutExt(dataFile) + 
+				"_result_2.csv");
+		double[] requestPercentage = {0.5, 1.0, 1.5};
+		FileWriter writer = new FileWriter(resultFile, true);
+		while(cacheSizeRampUp > 0 && cacheSize <= cacheSizeHigh) {
+			int totalCacheSize = (nClients + 1) * cacheSize;
+			warmup(cacheSize, cacheSize);
+			List<String> testRequests = getRequests(totalCacheSize);
+			writer.write(new Integer(cacheSize).toString());
+			for(double per : requestPercentage) {
+				int bloomFilterSize = (int) (per * (double) cacheSize);
+				bf.setupParameters(cacheSize, cacheSize, serverDiskSize,
+						bloomFilterSize).warmup(clientCaches, serverCache,
+								serverDisk);
+				ibf.setupParameters(cacheSize, cacheSize, serverDiskSize,
+						bloomFilterSize).warmup(clientCaches, serverCache,
+								serverDisk);
+				writer.write(","+cacheSize+"/"+bloomFilterSize);
+				writer.write(","+ bf.executeExperiment(testRequests) + ","
+						+ ibf.executeExperiment(testRequests));
 				bf.resetFalsePositive();
 				ibf.resetFalsePositive();
 			}
-			System.out.println("Experiment Completed");
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-		} finally {
-			try {
-				if(writer != null)
-					writer.close();
-			} catch (IOException e) {
-				System.err.println(e.getMessage());
-			}
+			writer.write("\n");
+			cacheSize += cacheSizeRampUp;
 		}
+		writer.close();
+	}
+
+	private void variableRequests(BloomFilter bf, BloomFilter ibf) 
+			throws IOException {
+		int cacheSize = cacheSizeLow;
+		File resultFile = new File(getFileNameWithoutExt(dataFile) + 
+				"_result_1.csv");
+		double[] requestPercentage = {0.5, 1.0, 1.5};
+		FileWriter writer = new FileWriter(resultFile, true);
+		while(cacheSizeRampUp > 0 && cacheSize <= cacheSizeHigh) {
+			int totalCacheSize = (nClients + 1) * cacheSize;
+			warmup(cacheSize, cacheSize);
+			bf.setupParameters(cacheSize, cacheSize, serverDiskSize, cacheSize)
+				.warmup(clientCaches, serverCache, serverDisk);
+			ibf.setupParameters(cacheSize, cacheSize, serverDiskSize, cacheSize)
+				.warmup(clientCaches, serverCache, serverDisk);
+			writer.write(new Integer(cacheSize).toString());
+			for(double per : requestPercentage) {
+				int requests = (int) (per * (double) totalCacheSize);
+				writer.write(","+totalCacheSize+"/"+requests);
+				List<String> testRequests = getRequests(requests);
+				writer.write(","+ bf.executeExperiment(testRequests) + ","
+						+ ibf.executeExperiment(testRequests));
+				bf.resetFalsePositive();
+				ibf.resetFalsePositive();
+			}
+			writer.write("\n");
+			cacheSize += cacheSizeRampUp;
+		}
+		writer.close();
 	}
 
 	/**
@@ -261,38 +293,6 @@ public class Simulator {
 	 * Forwarding
 	 */
 	private void cachingComparison() {
-		int totalRequests = 0;
-		
-		CachingAlgorithm traceObject = new CachingAlgorithm(nClients,
-				clientCacheSize, serverCacheSize, serverDiskSize,
-				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-				networkHopTicks);
-
-		CachingAlgorithm nChance = new NChance(nClients, clientCacheSize,
-				serverCacheSize, serverDiskSize, totalRequests,
-				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-
-		CachingAlgorithm robinhood = new RobinHood(nClients, clientCacheSize,
-				serverCacheSize, serverDiskSize, totalRequests,
-				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-
-		CachingAlgorithm greedy = new GreedyForwarding(nClients,
-				clientCacheSize, serverCacheSize, serverDiskSize,
-				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-				networkHopTicks);
-
-		CachingAlgorithm summaryCache = new SummaryCache(nClients,
-				clientCacheSize, serverCacheSize, serverDiskSize,
-				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-				networkHopTicks);
-
-		this.warmup();
-		traceObject.warmup(clientCaches, serverCache, serverDisk);
-		nChance.warmup(clientCaches, serverCache, serverDisk);
-		robinhood.warmup(clientCaches, serverCache, serverDisk);
-		greedy.warmup(clientCaches, serverCache, serverDisk);
-		summaryCache.warmup(clientCaches, serverCache, serverDisk);
-
 		// get the result of traces and algorithms
 		// method not complete
 		// will be complete after implemeting bloom filters
@@ -302,16 +302,22 @@ public class Simulator {
 	 * Distribute the data in dataList read from file to all the client caches,
 	 * server cache and server disk
 	 */
-	private void warmup() {
+	private void warmup(int clientCacheSize, int serverCacheSize) {
 		int serverCacheIndex = 0;
 		int serverDiskIndex = 0;
 		int serverCacheStartIndex = (nClients * clientCacheSize);
 		int serverCacheEndIndex = (nClients * clientCacheSize)
 				+ serverCacheSize;
+		
+		clientCaches = new Block[nClients][clientCacheSize];
+		serverCache = new Block[serverCacheSize];
+		serverDisk = new Block[serverDiskSize];
+
 		// copy data from list in sequential manner into client cache
 		for (int i = 0; i < nClients; i++) {
 			int k = 0;
-			for (int j = i * clientCacheSize; j < (clientCacheSize * (i + 1)); j++) {
+			for (int j = i * clientCacheSize; j < (clientCacheSize * (i + 1));
+					j++) {
 				clientCaches[i][k++] = new Block(dataList.get(j));
 			}
 		}

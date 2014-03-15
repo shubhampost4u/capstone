@@ -35,7 +35,7 @@ public class ClientWithIBF extends Client{
 	 */
 	public ClientWithIBF(int cacheSize, int bloomFilterSize, long clientId) {
 		super(cacheSize, clientId);
-		iBloomFilter = new int[cacheSize];
+		iBloomFilter = new int[bloomFilterSize];
 		this.bloomFilterSize = bloomFilterSize;
 	}
 	
