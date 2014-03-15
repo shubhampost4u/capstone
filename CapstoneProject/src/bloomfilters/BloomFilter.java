@@ -51,7 +51,16 @@ public class BloomFilter {
 		this.falsePositive = 0;
 	}
 
-	
+	/**
+	 * Setup the experiment parameters before executing the experiment.
+	 * 
+	 * @param clientCacheSize cache size of each client
+	 * @param serverCacheSize cache size of server
+	 * @param serverDiskSize disk size of server
+	 * @param bloomFilterSize bloom filter size of client/server
+	 * 
+	 * @return Bloom Filter object
+	 */
 	public BloomFilter setupParameters(int clientCacheSize, int serverCacheSize,
 			int serverDiskSize, int bloomFilterSize) {
 		this.clientCacheSize = clientCacheSize;

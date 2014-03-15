@@ -8,8 +8,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -35,11 +33,13 @@ public class Simulator {
 	/** Total clients in the system */
 	private int nClients;
 
-	/** Cache size of each client */
+	/** Low bound on cache size */
 	private int cacheSizeLow;
 	
+	/** High bound on cache size */
 	private int cacheSizeHigh;
 	
+	/** Rampup on cache size */
 	private int cacheSizeRampUp;
 	
 	/** disk size of server */
@@ -191,20 +191,23 @@ public class Simulator {
 	}
 
 	/**
-	 * 
+	 * Returns filename without the extension
 	 * @param filename
 	 * @return
 	 */
 	private String getFileNameWithoutExt(String filename) {
-				
 		return dataFile.replaceFirst("[.][^.]+$", "");
 	}
 	
 	/**
+	 * This method executes one type of bloom filter comparison experiment
+	 * which compares false positives with the cache size and bloom filter
+	 * size.
+	 *  
+	 * @param bf Bloom Filter object
+	 * @param ibf Importance Aware Bloom Filter object
 	 * 
-	 * @param bf
-	 * @param ibf
-	 * @throws IOException
+	 * @throws IOException Exception while file writing
 	 */
 	private void variableBloomFilterSize(BloomFilter bf, BloomFilter ibf) 
 			throws IOException {
@@ -238,6 +241,15 @@ public class Simulator {
 		writer.close();
 	}
 
+	/**
+	 * This method executes one type of bloom filter comparison experiment
+	 * which compares false positives with the cache size and total number of
+	 * requests.
+	 *  
+	 * @param bf Bloom Filter object
+	 * @param ibf Importance Aware Bloom Filter object
+	 * 
+	 * @throws IOException Exception while file writing	 */
 	private void variableRequests(BloomFilter bf, BloomFilter ibf) 
 			throws IOException {
 		int cacheSize = cacheSizeLow;
@@ -332,5 +344,4 @@ public class Simulator {
 			serverDisk[serverDiskIndex++] = new Block(dataList.get(i));
 		}
 	}
-
 }
