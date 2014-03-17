@@ -4,16 +4,34 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Class has the implementation of various hash functions used to get the hash
+ * value of data to be stored in bloom filters.
+ * 
+ * @author Shridhar Bhalekar
+ *
+ */
 public class DataHash {
 
+	/** Data whose hash value is required */
 	private String dataToBeHashed;
 	
+	/** Message digest to be generated*/
 	private MessageDigest messageDigest;
 	
+	/**
+	 * Creates object for calculating hash values of data
+	 * @param data to be hashed
+	 */
 	public DataHash(String data) {
 		this.dataToBeHashed = data;
 	}
 	
+	/**
+	 * Uses the java implementation of SHA-1
+	 * 
+	 * @return hashed value
+	 */
 	public BigInteger sha1() {
 		try {
 			messageDigest = MessageDigest.getInstance("SHA1"); 
@@ -26,6 +44,11 @@ public class DataHash {
 		return null;
 	}
 	
+	/**
+	 * Uses the java implementation of SHA-256
+	 * 
+	 * @return hashed value
+	 */
 	public BigInteger sha256() {
 		try {
 			messageDigest = MessageDigest.getInstance("SHA-256"); 
@@ -38,6 +61,11 @@ public class DataHash {
 		return null;
 	}
 	
+	/**
+	 * Uses the java implementation of SHA-384
+	 * 
+	 * @return hashed value
+	 */
 	public BigInteger sha384() {
 		try {
 			messageDigest = MessageDigest.getInstance("SHA-384"); 
@@ -50,9 +78,14 @@ public class DataHash {
 		return null;
 	}
 	
+	/**
+	 * Uses the java implementation of MD-5
+	 * 
+	 * @return hashed value
+	 */
 	public BigInteger md5() {
 		try {
-			messageDigest = MessageDigest.getInstance("MD2"); 
+			messageDigest = MessageDigest.getInstance("MD5"); 
 			messageDigest.update(dataToBeHashed.getBytes(), 0,
 					dataToBeHashed.length());
 			return new BigInteger(1, messageDigest.digest());
@@ -62,6 +95,12 @@ public class DataHash {
 		return null;
 	}
 	
+	/**
+	 * Starts with a prime number and calculates the hash value from the 
+	 * ASCII values of the characters
+	 * 
+	 * @return hashed value
+	 */
 	public BigInteger djb2() {
 		BigInteger hashVal = new BigInteger("5381");
 		for(int i = 0; i < dataToBeHashed.length(); i++) {
@@ -75,12 +114,13 @@ public class DataHash {
 		return hashVal;
 	}
 	
-	
-		
 //	public static void main(String[] args) {
 //		DataHash dh1 = new DataHash("123abc");
 //		DataHash dh2 = new DataHash("a123bc");
+//		System.out.println(dh1.sha256());
+//		System.out.println(dh1.sha1());
+//		System.out.println(dh1.sha384());
+//		System.out.println(dh1.md5());
 //		System.out.println(dh1.djb2());
-//		System.out.println(dh2.djb2());
 //	}
 }
