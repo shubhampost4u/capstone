@@ -1,13 +1,12 @@
 package simulation;
 
-
 /**
  * Represents a server for simulation
  * 
  * @author Shridhar Bhalekar
  *
  */
-public class Server {
+public abstract class Server {
 	
 	/** Cache component of server */
 	protected Storage cache;
@@ -39,6 +38,11 @@ public class Server {
 		disk = new Storage(diskSize);
 	}
 	
+	
+	public Storage getServerCache() {
+		return this.cache;
+	}
+	
 	/**
 	 * Fill the cache with data blocks before starting the experiment
 	 * 
@@ -52,17 +56,6 @@ public class Server {
 		cache.fillStorageBlocks(contents);
 		return true;
 	}
-	
-	/**
-	 * Checks if the data is present in bloom filter. Get k indices by getting
-	 * the k hash values of the data and then check if value at these k indices
-	 * are non zero
-	 * 
-	 * @param data query to fired
-	 */
-	public boolean isMember(String data) {
-		return false;
-	}	
 	
 	/**
 	 * Fill the disk with data blocks before starting the experiment
@@ -79,28 +72,6 @@ public class Server {
 	}
 	
 	/**
-	 * Locate the data in the cache blocks
-	 * 
-	 * @param request data to be located in the cache
-	 * @return true/false
-	 */
-	public boolean cacheLookup(String request) {
-		// lookup operation, add access ticks 
-		return false;
-	}
-	
-	/**
-	 * Locate the data in the disk blocks
-	 * 
-	 * @param request data to be located in the cache
-	 * @return true/false
-	 */
-	public boolean diskLookup(String request) {
-		// lookup operation add ticks
-		return false;
-	}
-	
-	/**
 	 * Get server id
 	 * @return server id
 	 */
@@ -108,4 +79,30 @@ public class Server {
 		return this.serverId;
 	}
 	
+	/**
+	 * Abstract method to check if the data is present in bloom filter. Get k 
+	 * indices by getting the k hash values of the data and then check if
+	 *  value at these k indices are non zero.
+	 * 
+	 * @param data query to fired
+	 */
+	public abstract boolean isMember(String data);
+	
+	/**
+	 * Locate the data in the cache blocks
+	 * 
+	 * @param request data to be located in the cache
+	 * @return true/false
+	 */
+	public int cacheLookup(String request) {
+		return cache.lookup(request);
+	}
+	
+	public Block getDiskBlock(int index) {
+		return disk.getBlock(index);
+	}
+	
+	public Block getCacheBlock(int index) {
+		return cache.getBlock(index);
+	}
 }

@@ -24,13 +24,13 @@ public class Storage {
 	 * @param data to be looked up
 	 * @return true/false
 	 */
-	public boolean lookup(String data) {
+	public int lookup(String data) {
 		for(int i = 0; i < storageSpace.length; i++) {
 			if(storageSpace[i].isEqual(data)) {
-				return true;
+				return i;
 			}
 		}
-		return false;
+		return -1;
 	}
 	
 	/**
@@ -41,5 +41,13 @@ public class Storage {
 		for(int i = 0; i < contents.length; i++) {
 			storageSpace[i] = contents[i];
 		}
+	}
+	
+	public void update(int index, Block block) {
+		storageSpace[index] = block;
+	}
+	
+	public Block getBlock(int index) {
+		return storageSpace[index];
 	}
 }

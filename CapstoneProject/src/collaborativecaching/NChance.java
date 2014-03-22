@@ -1,5 +1,8 @@
 package collaborativecaching;
 
+import java.util.List;
+
+import simulation.Block;
 import simulation.Client;
 import simulation.Server;
 
@@ -26,14 +29,17 @@ public class NChance extends CachingAlgorithm {
 			int serverDiskSize, int totalRequests, int cacheReferenceTicks,
 			int diskToCacheTicks, int networkHopTicks) {
 		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize,
-				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-				networkHopTicks);
-		clients = new Client[nClients];
-		server = new Server(serverCacheSize, serverDiskSize, 1);
+				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
 	}
 
 	@Override
-	public void runAlgorithm() {
+	public void executeExperiment(List<String> requests) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void warmup(Block[][] clientCaches, Block[] serverCache,
+			Block[] serverDisk) {
 		// TODO Auto-generated method stub
 		
 	}

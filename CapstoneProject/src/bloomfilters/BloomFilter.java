@@ -6,9 +6,7 @@ import java.util.Random;
 
 import simulation.Block;
 import simulation.Client;
-import simulation.ClientWithBF;
 import simulation.Server;
-import simulation.ServerWithBF;
 
 /**
  * Implements the bloom filter algorithm
@@ -115,7 +113,7 @@ public class BloomFilter {
 				if(!coveredClients.contains(clientIndex)) {
 					// check bloom filter
 					if(clients[clientIndex].isMember(request)) {
-						if(!clients[clientIndex].cacheLookup(request)) {
+						if(clients[clientIndex].cacheLookup(request) == -1) {
 							falsePositive += 1;
 						} else {
 							break;
@@ -127,7 +125,7 @@ public class BloomFilter {
 			// check server
 			if(coveredClients.size() == nClients) {
 				if(server.isMember(request)) {
-					if(!server.cacheLookup(null)) {
+					if(server.cacheLookup(request) == -1) {
 						falsePositive += 1;
 					}
 				}

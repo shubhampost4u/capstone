@@ -1,5 +1,6 @@
 package collaborativecaching;
 
+import java.util.List;
 import java.util.Random;
 
 import simulation.Block;
@@ -18,7 +19,7 @@ import simulation.Server;
  * @author Shridhar Bhalekar
  *
  */
-public class CachingAlgorithm {
+public abstract class CachingAlgorithm {
 	
 	/** Total clients in the system */
 	protected int nClients;
@@ -63,14 +64,13 @@ public class CachingAlgorithm {
 	 * @param networkHopTicks ticks for network transfer
 	 */
 	public CachingAlgorithm(int nClients, int clientCacheSize, 
-			int serverCacheSize, int serverDiskSize, int totalRequests,
-			int cacheReferenceTicks, int diskToCacheTicks, int networkHopTicks)
+			int serverCacheSize, int serverDiskSize, int cacheReferenceTicks,
+			int diskToCacheTicks, int networkHopTicks)
 	{
 		this.nClients = nClients;
 		this.clientCacheSize = clientCacheSize;
 		this.serverCacheSize = serverCacheSize;
 		this.serverDiskSize = serverDiskSize;
-		this.totalRequests = totalRequests;
 		this.cacheReferenceTicks = cacheReferenceTicks;
 		this.diskToCacheTicks = diskToCacheTicks;
 		this.networkHopTicks = networkHopTicks;
@@ -83,18 +83,8 @@ public class CachingAlgorithm {
 	 * @param serverCache data to be inserted in server cache
 	 * @param serverDisk data to be inserted in server disk
 	 */
-	public void warmup(Block[][] clientCaches, Block[] serverCache,
-			Block[] serverDisk) {
-		clients = new Client[nClients];
-		server = new Server(serverCacheSize, serverDiskSize, 1);
-		server.cacheWarmUp(serverCache);
-		server.diskWarmUp(serverDisk);
-		
-		for(int i = 0; i < nClients; i++) {
-			clients[i] = new Client(clientCacheSize, i);
-			clients[i].cacheWarmUp(clientCaches[i]);
-		}
-	}
+	public abstract void warmup(Block[][] clientCaches, Block[] serverCache,
+			Block[] serverDisk);
 	
 	/**
 	 * Best Case where every requested data will be on the requested client 
@@ -180,7 +170,5 @@ public class CachingAlgorithm {
 	/**
 	 * Run the caching algorithm
 	 */
-	public void runAlgorithm() {
-		
-	}
+	public abstract void executeExperiment(List<String> requests);
 }

@@ -5,7 +5,7 @@ package simulation;
  * 
  * @author Shridhar Bhalekar
  */
-public class Block {
+public class Block implements Comparable<Block>{
 	/** Actual data in the block */
 	private String data;
 	
@@ -46,5 +46,10 @@ public class Block {
 	@Override
 	public String toString() {
 		return this.data;
+	}
+
+	@Override
+	public int compareTo(Block block) {
+		return this.data.compareTo(block.getData());
 	}
 }

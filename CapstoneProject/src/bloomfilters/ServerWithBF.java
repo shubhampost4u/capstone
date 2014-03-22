@@ -1,14 +1,17 @@
-package simulation;
+package bloomfilters;
 
 import java.math.BigInteger;
 
+import simulation.Block;
+import simulation.DataHash;
+import simulation.Server;
+
 /**
- * Subclass of Client class with the bloom filter component
- * 
+ * Subclass of Server class with the bloom filter component
  * @author Shridhar Bhalekar
  *
  */
-public class ClientWithBF extends Client {
+public class ServerWithBF extends Server{
 
 	/** Array representing bloom filter */
 	private int[] bloomFilter;
@@ -16,14 +19,16 @@ public class ClientWithBF extends Client {
 	/** Size of bloom filter */
 	private int bloomFilterSize;
 	
-	
 	/**
-	 * Create Object with cache size and client id
-	 * @param cacheSize
-	 * @param clientId
+	 * Create Object with cache size, disk size and client id
+	 * 
+	 * @param cacheSize size of cache component
+	 * @param diskSize size of disk component
+	 * @param serverId server id
 	 */
-	public ClientWithBF(int cacheSize, int bloomFilterSize, long clientId) {
-		super(cacheSize, clientId);
+	public ServerWithBF(int cacheSize, int bloomFilterSize,
+			int diskSize, long serverId) {
+		super(cacheSize, diskSize, serverId);
 		bloomFilter = new int[bloomFilterSize];
 		this.bloomFilterSize = bloomFilterSize;
 	}

@@ -5,7 +5,7 @@ package simulation;
  * @author Shridhar Bhalekar
  *
  */
-public class Client {
+public abstract class Client {
 	
 	/** Cache of the client */
 	protected Storage cache;
@@ -23,7 +23,7 @@ public class Client {
 	 * @param clientId id for this client
 	 */
 	public Client(int cacheSize, long clientId) {
-		this.cache = new Cache(cacheSize);
+		this.cache = new Storage(cacheSize);
 		this.cacheSize = cacheSize;
 		this.clientId = clientId;
 	}
@@ -48,7 +48,7 @@ public class Client {
 	 * @param data to be located in the cache
 	 * @return true/false
 	 */
-	public boolean cacheLookup(String data) {
+	public int cacheLookup(String data) {
 		return cache.lookup(data);
 	}
 	
@@ -59,9 +59,7 @@ public class Client {
 	 * 
 	 * @param data query to fired
 	 */
-	public boolean isMember(String data) {
-		return false;
-	}
+	public abstract boolean isMember(String data);
 	
 	/**
 	 * Get the client id
@@ -69,5 +67,13 @@ public class Client {
 	 */
 	public long getClientId() {
 		return this.clientId;
+	}
+	
+	public int getCacheSize() {
+		return this.cacheSize;
+	}
+	
+	public Block getCacheBlock(int index) {
+		return cache.getBlock(index);
 	}
 }

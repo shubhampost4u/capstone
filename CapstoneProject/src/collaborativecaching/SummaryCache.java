@@ -1,9 +1,11 @@
 package collaborativecaching;
 
+import java.util.List;
+
+import bloomfilters.ClientWithIBF;
+import bloomfilters.ServerWithIBF;
 import simulation.Block;
 import simulation.Client;
-import simulation.ClientWithIBF;
-import simulation.ServerWithIBF;
 
 /**
  * Summary Cache with Importance Aware Bloom Filter
@@ -30,11 +32,8 @@ public class SummaryCache extends CachingAlgorithm {
 			int serverDiskSize, int totalRequests, int bloomFilterSize,
 			int cacheReferenceTicks, int diskToCacheTicks,
 			int networkHopTicks) {
-		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize,
-				totalRequests, cacheReferenceTicks, diskToCacheTicks,
-				networkHopTicks);
-		clients = new ClientWithIBF[nClients];
-		this.bloomFilterSize = bloomFilterSize;
+		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize, 
+				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
 	}
 	
 	/**
@@ -58,8 +57,7 @@ public class SummaryCache extends CachingAlgorithm {
 		}
 	}
 	@Override
-	public void runAlgorithm() {
-		// TODO Auto-generated method stub
+	public void executeExperiment(List<String> requests) {
 	}
 
 }

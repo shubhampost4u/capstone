@@ -1,9 +1,13 @@
-package simulation;
+package bloomfilters;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import simulation.Block;
+import simulation.Client;
+import simulation.DataHash;
 
 /**
  * Subclass of Client class with the importance aware bloom filter component

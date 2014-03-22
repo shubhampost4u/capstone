@@ -2,8 +2,6 @@ package bloomfilters;
 
 import simulation.Block;
 import simulation.Client;
-import simulation.ClientWithIBF;
-import simulation.ServerWithIBF;
 
 /**
  * Implements the importance aware bloom filter
