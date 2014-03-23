@@ -38,4 +38,22 @@ public class RobinHood extends CachingAlgorithm{
 		
 	}
 
+	@Override
+	public double getTicksPerRequest() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getCacheMiss() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getCacheHit() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

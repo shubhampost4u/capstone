@@ -60,4 +60,22 @@ public class SummaryCache extends CachingAlgorithm {
 	public void executeExperiment(List<String> requests) {
 	}
 
+	@Override
+	public double getTicksPerRequest() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getCacheMiss() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getCacheHit() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

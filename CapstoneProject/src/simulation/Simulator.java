@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import collaborativecaching.CachingAlgorithm;
 import collaborativecaching.GreedyForwarding;
 //import collaborativecaching.NChance;
 //import collaborativecaching.RobinHood;

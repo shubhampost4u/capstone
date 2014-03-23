@@ -5,27 +5,27 @@ import java.util.Random;
 import simulation.Block;
 import simulation.Client;
 
-public class CachingClient extends Client{
+public abstract class CachingClient extends Client{
 
-	private int cacheReferenceTicks;
+	protected int cacheReferenceTicks;
 		
-	private int networkHopTicks;
+	protected int networkHopTicks;
 	
-	private CachingServer server;
+	protected CachingServer server;
 	
-	private static final int MIN_LRU_COUNT = 1;
+	protected static final int MIN_LRU_COUNT = 1;
 	
-	private static final int MAX_LRU_COUNT = 10;
+	protected static final int MAX_LRU_COUNT = 10;
 	
-	private Block response;
+	protected Block response;
 	
-	private int requestCost;
+	protected int requestCost;
 	
-	private int cacheHit;
+	protected int cacheHit;
 	
-	private int cacheMiss;
+	protected int cacheMiss;
 	
-	private int[] cacheLRUCount;
+	protected int[] cacheLRUCount;
 	
 	public CachingClient(long clientId, int cacheSize, int cacheReferenceTicks,
 			int networkHopTicks, CachingServer server) {
@@ -42,35 +42,6 @@ public class CachingClient extends Client{
 		for(int i = 0; i < cacheSize; i++) {
 			cacheLRUCount[i] = random.nextInt((MAX_LRU_COUNT - MIN_LRU_COUNT)
 					+ 1) + MIN_LRU_COUNT;
-		}
-		return true;
-	}
-	
-	public boolean requestData(int ticksPerRequest, int cacheMiss, 
-			int cacheHit, CachingClient requester, String block,
-			boolean sentByServer) {
-		int index = cacheLookup(block);
-		ticksPerRequest += cacheReferenceTicks;
-		if(requester == null) {
-			requester = this;
-		}
-		
-		if(index != -1) {
-			ticksPerRequest += networkHopTicks;
-			cacheHit += 1;
-			if(cacheLRUCount[index] != MAX_LRU_COUNT) {
-				cacheLRUCount[index] += 1;
-			}
-			requester.setResponse(cache.getBlock(index), ticksPerRequest,
-					cacheMiss, cacheHit);
-		} else {
-			if(sentByServer) {
-				server.updateClientContents();
-				return false;
-			}
-			ticksPerRequest += networkHopTicks;
-			return server.requestData(ticksPerRequest, cacheMiss, cacheHit,
-					requester, block);
 		}
 		return true;
 	}
@@ -99,26 +70,39 @@ public class CachingClient extends Client{
 		return cacheMiss;
 	}
 	
-	public void updateCache(Block data) {
-		int min = MAX_LRU_COUNT;
-		int minIndex = -1;
-		for(int i = 0; i < cacheSize; i++) {
-			if(cacheLRUCount[i] < min) {
-				min = cacheLRUCount[i];
-				minIndex = i;
+	public boolean requestData(int ticksPerRequest, int cacheMiss, 
+			int cacheHit, CachingClient requester, String block,
+			boolean sentByServer) {
+		int index = cacheLookup(block);
+		ticksPerRequest += cacheReferenceTicks;
+		if(requester == null) {
+			requester = this;
+		}
+		
+		if(index != -1) {
+			ticksPerRequest += networkHopTicks;
+			cacheHit += 1;
+			if(cacheLRUCount[index] != MAX_LRU_COUNT) {
+				cacheLRUCount[index] += 1;
 			}
+			for(int i = 0; i < cacheLRUCount.length; i++) {
+				if(i != index && cacheLRUCount[i] > 0) {
+					cacheLRUCount[i] -= 1;
+				}
+			}
+			requester.setResponse(cache.getBlock(index), ticksPerRequest,
+					cacheMiss, cacheHit);
+		} else {
+			if(sentByServer) {
+				server.updateClientContents();
+				return false;
+			}
+			ticksPerRequest += networkHopTicks;
+			return server.requestData(ticksPerRequest, cacheMiss, cacheHit,
+					requester, block);
 		}
-		if(min > -1 && min < 10) {
-			Block ret = cache.getBlock(minIndex);
-			cache.update(minIndex, data);
-			cacheLRUCount[minIndex] =  new Random().nextInt((MAX_LRU_COUNT
-					- MIN_LRU_COUNT) + 1) + MIN_LRU_COUNT;
-			server.updateCache(ret);
-		}
+		return true;
 	}
 	
-	@Override
-	public boolean isMember(String data) {
-		return false;
-	}
+	public abstract void updateCache(Block data);
 }

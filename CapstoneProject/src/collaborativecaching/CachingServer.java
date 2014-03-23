@@ -9,25 +9,25 @@ import java.util.Set;
 import simulation.Block;
 import simulation.Server;
 
-public class CachingServer extends Server {
+public abstract class CachingServer extends Server {
 
-	private int nClients;
+	protected int nClients;
 	
-	private int cacheReferenceTicks;
+	protected int cacheReferenceTicks;
 	
-	private int networkHopTicks;
+	protected int networkHopTicks;
 	
-	private int diskToCacheTicks;
+	protected int diskToCacheTicks;
 	
-	private List<Set<Integer>> clientContents;
+	protected List<Set<Integer>> clientContents;
 	
-	private CachingClient[] clients;
+	protected CachingClient[] clients;
 	
-	private static final int MIN_LRU_COUNT = 1;
+	protected static final int MIN_LRU_COUNT = 1;
 	
-	private static final int MAX_LRU_COUNT = 10;
+	protected static final int MAX_LRU_COUNT = 10;
 		
-	private int[] cacheLRUCount;
+	protected int[] cacheLRUCount;
 	
 	public CachingServer(long serverId, int cacheSize, int diskSize, 
 			int cacheReferenceTicks, int diskToCacheTicks, int networkHopTicks)
@@ -48,6 +48,7 @@ public class CachingServer extends Server {
 			this.clients[i] = clients[i];
 		}
 	}
+	
 	public boolean cacheWarmUp(Block[] contents) {
 		super.cacheWarmUp(contents);
 		Random random = new Random();
@@ -67,6 +68,7 @@ public class CachingServer extends Server {
 			}
 		}
 	}
+	
 	public boolean requestData(int ticksPerRequest, int cacheMiss, 
 			int cacheHit, CachingClient requester, String block) {
 		int hash = block.hashCode(); 
@@ -88,6 +90,11 @@ public class CachingServer extends Server {
 			if(cacheLRUCount[index] != MAX_LRU_COUNT) {
 				cacheLRUCount[index] += 1;
 			}
+			for(int i = 0; i < cacheLRUCount.length; i++) {
+				if(i != index && cacheLRUCount[i] > 0) {
+					cacheLRUCount[i] -= 1;
+				}
+			}
 			requester.setResponse(cache.getBlock(index), ticksPerRequest,
 					cacheMiss, cacheHit);
 			return true;
@@ -103,25 +110,5 @@ public class CachingServer extends Server {
 		return true;
 	}
 	
-	public void updateCache(Block data) {
-		int min = MAX_LRU_COUNT;
-		int minIndex = -1;
-		for(int i = 0; i < cacheSize; i++) {
-			if(cacheLRUCount[i] < min) {
-				min = cacheLRUCount[i];
-				minIndex = i;
-			}
-		}
-		if(min > -1 && min < 10) {
-			cache.update(minIndex, data);
-			cacheLRUCount[minIndex] =  new Random().nextInt((MAX_LRU_COUNT
-					- MIN_LRU_COUNT) + 1) + MIN_LRU_COUNT;
-		}
-	}
-
-	@Override
-	public boolean isMember(String data) {
-		return false;
-	}
-
+	public abstract void updateCache(Block data);
 }

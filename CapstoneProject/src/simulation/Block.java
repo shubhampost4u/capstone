@@ -9,6 +9,9 @@ public class Block implements Comparable<Block>{
 	/** Actual data in the block */
 	private String data;
 	
+	public int recirculationCount;
+	
+	public boolean isSinglet;
 	/**
 	 * Creates object storing data
 	 * 

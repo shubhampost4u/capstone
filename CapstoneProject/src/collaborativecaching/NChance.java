@@ -44,4 +44,19 @@ public class NChance extends CachingAlgorithm {
 		
 	}
 
+	@Override
+	public double getTicksPerRequest() {
+		return ticksPerRequest;
+	}
+
+	@Override
+	public double getCacheMiss() {
+		return cacheMissPerRequest;
+	}
+
+	@Override
+	public double getCacheHit() {
+		return cacheHitPerRequest;
+	}
+
 }

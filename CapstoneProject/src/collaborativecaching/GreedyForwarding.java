@@ -12,11 +12,6 @@ import simulation.Block;
  */
 public class GreedyForwarding extends CachingAlgorithm {
 
-	private double ticksPerRequest;
-	
-	private double cacheHitPerRequest;
-	
-	private double cacheMissPerRequest;
 	
 	/** 
 	 * Create object for executing greedy forwarding cooperative caching
@@ -47,16 +42,16 @@ public class GreedyForwarding extends CachingAlgorithm {
 	 */
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
-		clients = new CachingClient[nClients];
-		server = new CachingServer(1, serverCacheSize, serverDiskSize,
+		clients = new GFClient[nClients];
+		server = new GFServer(1, serverCacheSize, serverDiskSize,
 				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
 		for(int i = 0; i < nClients; i++) {
-			clients[i] = new CachingClient(i, clientCacheSize, 
-					cacheReferenceTicks, networkHopTicks, (CachingServer)server);
+			clients[i] = new GFClient(i, clientCacheSize, 
+					cacheReferenceTicks, networkHopTicks, (GFServer)server);
 			clients[i].cacheWarmUp(clientCaches[i]);
 		}
-		((CachingServer) server).updateClients((CachingClient[])clients);
-		((CachingServer) server).updateClientContents();
+		((GFServer) server).updateClients((GFClient[])clients);
+		((GFServer) server).updateClientContents();
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
 	}

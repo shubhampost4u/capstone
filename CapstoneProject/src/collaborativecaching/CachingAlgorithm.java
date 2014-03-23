@@ -50,6 +50,12 @@ public abstract class CachingAlgorithm {
 	
 	/** Server to form network */
 	protected Server server;
+	
+	protected double ticksPerRequest;
+	
+	protected double cacheHitPerRequest;
+	
+	protected double cacheMissPerRequest;
 
 	/** 
 	 * Create object for executing caching algorithm
@@ -75,17 +81,7 @@ public abstract class CachingAlgorithm {
 		this.diskToCacheTicks = diskToCacheTicks;
 		this.networkHopTicks = networkHopTicks;
 	}
-	
-	/**
-	 * Fill the clients/server cache and disk before executing the experiment
-	 * 
-	 * @param clientCaches data to be inserted in client caches
-	 * @param serverCache data to be inserted in server cache
-	 * @param serverDisk data to be inserted in server disk
-	 */
-	public abstract void warmup(Block[][] clientCaches, Block[] serverCache,
-			Block[] serverDisk);
-	
+		
 	/**
 	 * Best Case where every requested data will be on the requested client 
 	 * cache
@@ -168,7 +164,23 @@ public abstract class CachingAlgorithm {
 	}
 	
 	/**
+	 * Fill the clients/server cache and disk before executing the experiment
+	 * 
+	 * @param clientCaches data to be inserted in client caches
+	 * @param serverCache data to be inserted in server cache
+	 * @param serverDisk data to be inserted in server disk
+	 */
+	public abstract void warmup(Block[][] clientCaches, Block[] serverCache,
+			Block[] serverDisk);
+	
+	/**
 	 * Run the caching algorithm
 	 */
 	public abstract void executeExperiment(List<String> requests);
+	
+	public abstract double getTicksPerRequest();
+	
+	public abstract double getCacheMiss();
+	
+	public abstract double getCacheHit();
 }
