@@ -9,9 +9,9 @@ public class Block implements Comparable<Block>{
 	/** Actual data in the block */
 	private String data;
 	
+	/** Recirculation count of block */
 	public int recirculationCount;
 	
-	public boolean isSinglet;
 	/**
 	 * Creates object storing data
 	 * 
@@ -19,6 +19,7 @@ public class Block implements Comparable<Block>{
 	 */
 	public Block(String data) {
 		this.data = data;
+		this.recirculationCount = -1;
 	}
 	
 	/**

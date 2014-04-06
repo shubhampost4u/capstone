@@ -1,15 +1,12 @@
 package collaborativecaching;
 
-import java.util.List;
-
 import simulation.Block;
-import simulation.Client;
-import simulation.Server;
 
 /**
- * Nchance algorithm
+ * Class to implement the NChance algorithm by creating a system of clients and 
+ * server.
+ * 
  * @author Shridhar Bhalekar
- *
  */
 public class NChance extends CachingAlgorithm {
 
@@ -26,37 +23,34 @@ public class NChance extends CachingAlgorithm {
 	 * @param networkHopTicks ticks for network transfer
 	 */
 	public NChance(int nClients, int clientCacheSize, int serverCacheSize,
-			int serverDiskSize, int totalRequests, int cacheReferenceTicks,
+			int serverDiskSize,int cacheReferenceTicks,
 			int diskToCacheTicks, int networkHopTicks) {
 		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize,
 				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
 	}
 
-	@Override
-	public void executeExperiment(List<String> requests) {
-		// TODO Auto-generated method stub
-	}
-
+	/**
+	 * Overridden method of CachingAlgorithm class to distribute data to clients
+	 * and server in the system. This is an initial configuration of the system
+	 * 
+	 * @param clientCaches data to be inserted in client caches
+	 * @param serverCache data to be inserted in server cache
+	 * @param serverDisk data to be inserted in server disk
+	 */
 	@Override
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
-		// TODO Auto-generated method stub
-		
+		clients = new NCClient[nClients];
+		server = new NCServer(1, serverCacheSize, serverDiskSize,
+				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
+		for(int i = 0; i < nClients; i++) {
+			clients[i] = new NCClient(i, clientCacheSize, 
+					cacheReferenceTicks, networkHopTicks, (NCServer)server);
+			clients[i].cacheWarmUp(clientCaches[i]);
+		}
+		((NCServer) server).updateClients((NCClient[])clients);
+		((NCServer) server).updateClientContents();
+		server.cacheWarmUp(serverCache);
+		server.diskWarmUp(serverDisk);
 	}
-
-	@Override
-	public double getTicksPerRequest() {
-		return ticksPerRequest;
-	}
-
-	@Override
-	public double getCacheMiss() {
-		return cacheMissPerRequest;
-	}
-
-	@Override
-	public double getCacheHit() {
-		return cacheHitPerRequest;
-	}
-
 }

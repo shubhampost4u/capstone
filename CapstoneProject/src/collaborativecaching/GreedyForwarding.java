@@ -1,18 +1,15 @@
 package collaborativecaching;
 
-import java.util.List;
-import java.util.Random;
-
 import simulation.Block;
 
 /**
- * Greedy forwarding algorithm
+ * Class which implements the Greedy forwarding algorithm by creating a system
+ * of clients and server.
+ * 
  * @author Shridhar Bhalekar
- *
  */
 public class GreedyForwarding extends CachingAlgorithm {
 
-	
 	/** 
 	 * Create object for executing greedy forwarding cooperative caching
 	 *  algorithm
@@ -54,35 +51,5 @@ public class GreedyForwarding extends CachingAlgorithm {
 		((GFServer) server).updateClientContents();
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
-	}
-	
-	public double getTicksPerRequest() {
-		return ticksPerRequest;
-	}
-	
-	public double getCacheMiss() {
-		return cacheMissPerRequest;
-	}
-	
-	public double getCacheHit() {
-		return cacheHitPerRequest;
-	}
-	
-	@Override
-	public void executeExperiment(List<String> requests) {
-		int cacheHit = 0;
-		int cacheMiss = 0;
-		int ticks  = 0;
-		for(String request : requests) {
-			CachingClient client = ((CachingClient)clients
-					[new Random().nextInt(nClients)]); 
-			client.requestData(0, 0, 0, null, request, false);
-			ticks += client.getResponseCost();
-			cacheMiss += client.getCacheMiss();
-			cacheHit += client.getCacheHit();
-		}
-		ticksPerRequest = (double) ticks / (double)requests.size();
-		cacheMissPerRequest = (double) cacheMiss / (double) requests.size();
-		cacheHitPerRequest = (double) cacheHit / (double) requests.size();
 	}
 }

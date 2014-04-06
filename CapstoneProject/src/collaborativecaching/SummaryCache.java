@@ -29,11 +29,15 @@ public class SummaryCache extends CachingAlgorithm {
 	 * @param networkHopTicks ticks for network transfer
 	 */
 	public SummaryCache(int nClients, int clientCacheSize, int serverCacheSize,
-			int serverDiskSize, int totalRequests, int bloomFilterSize,
-			int cacheReferenceTicks, int diskToCacheTicks,
+			int serverDiskSize, int cacheReferenceTicks, int diskToCacheTicks,
 			int networkHopTicks) {
 		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize, 
 				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
+	}
+	
+	
+	public void setBloomFilterSize(int bloomFilterSize) {
+		this.bloomFilterSize = bloomFilterSize;
 	}
 	
 	/**

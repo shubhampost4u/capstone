@@ -11,24 +11,43 @@ import simulation.Server;
 
 public abstract class CachingServer extends Server {
 
+	/** Total clients in the system */
 	protected int nClients;
 	
+	/** Ticks required for cache reference */
 	protected int cacheReferenceTicks;
-	
+		
+	/** Ticks required for transferring data over network */
 	protected int networkHopTicks;
 	
+	/** Ticks required for server disk reference */
 	protected int diskToCacheTicks;
 	
+	/** List containing the set of hash values of each client cache */
 	protected List<Set<Integer>> clientContents;
 	
+	/** Array of clients in the system */
 	protected CachingClient[] clients;
 	
+	/** Minimum LRU count */
 	protected static final int MIN_LRU_COUNT = 1;
 	
+	/** Maximum LRU count */
 	protected static final int MAX_LRU_COUNT = 10;
 		
+	/** LRU count of cache blocks */
 	protected int[] cacheLRUCount;
 	
+	/**
+	 * Server object used in analyzing the Caching Algorithms
+	 *   
+	 * @param serverId id of client
+	 * @param cacheSize size of server cache
+	 * @param diskSize size of server disk
+	 * @param cacheReferenceTicks ticks required to reference cache
+	 * @param diskToCacheTicks ticks required to reference disk
+	 * @param networkHopTicks ticks required to send block over network
+	 */
 	public CachingServer(long serverId, int cacheSize, int diskSize, 
 			int cacheReferenceTicks, int diskToCacheTicks, int networkHopTicks)
 	{
@@ -40,6 +59,11 @@ public abstract class CachingServer extends Server {
 		cacheLRUCount = new int[cacheSize];
 	}
 
+	/**
+	 * Update the client references.
+	 * 
+	 * @param clients references to clients in system
+	 */
 	public void updateClients(CachingClient[] clients) {
 		nClients = clients.length;
 		this.clients = new CachingClient[nClients];
@@ -49,6 +73,11 @@ public abstract class CachingServer extends Server {
 		}
 	}
 	
+	/**
+	 * Initialize client cache by putting data into cache
+	 * 
+	 * @param contents data to be transferred to client cache
+	 */
 	public boolean cacheWarmUp(Block[] contents) {
 		super.cacheWarmUp(contents);
 		Random random = new Random();
@@ -59,6 +88,9 @@ public abstract class CachingServer extends Server {
 		return true;
 	}
 	
+	/**
+	 * Records the contents of each client cache 
+	 */
 	public void updateClientContents() {
 		for(int i = 0; i < nClients; i++) {
 			CachingClient client = clients[i];
@@ -69,9 +101,22 @@ public abstract class CachingServer extends Server {
 		}
 	}
 	
+	/**
+	 * This method is called by another client/server to request the data from
+	 * the system of collaborative caches.
+	 * 
+	 * @param ticksPerRequest ticks associated with the current request
+	 * @param cacheMiss cache miss associated with the current request
+	 * @param cacheHit cache hit associated with the current request
+	 * @param requester client who requested the data
+	 * @param block data requested
+	 * 
+	 * @return boolean to represent status  
+	 */
 	public boolean requestData(int ticksPerRequest, int cacheMiss, 
 			int cacheHit, CachingClient requester, String block) {
 		int hash = block.hashCode(); 
+		// check the block in each client cache
 		for(int i = 0; i < nClients; i++) {
 			if(requester.getClientId() != clients[i].getClientId() &&
 					clientContents.get(i).contains(hash)) {
@@ -84,16 +129,17 @@ public abstract class CachingServer extends Server {
 		}
 		ticksPerRequest += cacheReferenceTicks;
 		int index = cacheLookup(block);
+		// reduce the LRU count of each cache element after cache reference
+		for(int i = 0; i < cacheLRUCount.length; i++) {
+			if(i != index && cacheLRUCount[i] > 0) {
+				cacheLRUCount[i] -= 1;
+			}
+		}
 		if(index != -1) {
 			cacheHit += 1;
 			ticksPerRequest += networkHopTicks;
 			if(cacheLRUCount[index] != MAX_LRU_COUNT) {
 				cacheLRUCount[index] += 1;
-			}
-			for(int i = 0; i < cacheLRUCount.length; i++) {
-				if(i != index && cacheLRUCount[i] > 0) {
-					cacheLRUCount[i] -= 1;
-				}
 			}
 			requester.setResponse(cache.getBlock(index), ticksPerRequest,
 					cacheMiss, cacheHit);
@@ -110,5 +156,10 @@ public abstract class CachingServer extends Server {
 		return true;
 	}
 	
+	/**
+	 * Method to update the least recently used cache block.
+	 * 
+	 * @param data block to be updated
+	 */
 	public abstract void updateCache(Block data);
 }

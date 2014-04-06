@@ -51,10 +51,13 @@ public abstract class CachingAlgorithm {
 	/** Server to form network */
 	protected Server server;
 	
+	/** Ticks required for satisfying each requests */
 	protected double ticksPerRequest;
 	
+	/** Cache Hit ratio per request */
 	protected double cacheHitPerRequest;
 	
+	/** Cache Miss ratio per request */
 	protected double cacheMissPerRequest;
 
 	/** 
@@ -149,6 +152,7 @@ public abstract class CachingAlgorithm {
 	/**
 	 * Worst case where requested data on the server disk
 	 * @param serverDisk server disk contents
+	 * 
 	 * @return ticks
 	 */
 	public double traceWorstCase(Block[] serverDisk) {
@@ -162,9 +166,56 @@ public abstract class CachingAlgorithm {
 		}
 		return result;
 	}
+		
+	/**
+	 * Method to execute the cooperative caching experiments
+	 * 
+	 * @param requests list of requests to be fired on clients
+	 */
+	public void executeExperiment(List<String> requests) {
+		int cacheHit = 0;
+		int cacheMiss = 0;
+		int ticks  = 0;
+		for(String request : requests) {
+			CachingClient client = ((CachingClient)clients
+					[new Random().nextInt(nClients)]); 
+			client.requestData(0, 0, 0, null, request, false);
+			ticks += client.getResponseCost();
+			cacheMiss += client.getCacheMiss();
+			cacheHit += client.getCacheHit();
+		}
+		ticksPerRequest = (double) ticks / (double)requests.size();
+		cacheMissPerRequest = (double) cacheMiss / (double) requests.size();
+		cacheHitPerRequest = (double) cacheHit / (double) requests.size();
+	}
 	
 	/**
-	 * Fill the clients/server cache and disk before executing the experiment
+	 * Method to return ticks per request
+	 * @return ticks per request
+	 */
+	public double getTicksPerRequest() {
+		return ticksPerRequest;
+	}
+	
+	/**
+	 * Method to return cache miss per request
+	 * @return cache miss ratio
+	 */
+	public double getCacheMiss() {
+		return cacheMissPerRequest;
+	}
+	
+	/**
+	 * Method to return cache hit ratio
+	 * @return cache hit ratio
+	 */
+	public double getCacheHit() {
+		return cacheHitPerRequest;
+	}
+	
+	/**
+	 * Overridden method of CachingAlgorithm class to distribute data to clients
+	 * and server in the system. This is an initial configuration of the system
 	 * 
 	 * @param clientCaches data to be inserted in client caches
 	 * @param serverCache data to be inserted in server cache
@@ -172,15 +223,4 @@ public abstract class CachingAlgorithm {
 	 */
 	public abstract void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk);
-	
-	/**
-	 * Run the caching algorithm
-	 */
-	public abstract void executeExperiment(List<String> requests);
-	
-	public abstract double getTicksPerRequest();
-	
-	public abstract double getCacheMiss();
-	
-	public abstract double getCacheHit();
 }
