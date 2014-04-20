@@ -9,6 +9,13 @@ import java.util.Set;
 import simulation.Block;
 import simulation.Server;
 
+/**
+ * Sub class of server class to be used for the comparison of cooperative 
+ * caching algoritms like NChance, Greedy Forwarding, Robinhood, Summary Cache
+ * 
+ * @author Shridhar Bhalekar
+ *
+ */
 public abstract class CachingServer extends Server {
 
 	/** Total clients in the system */
@@ -114,15 +121,16 @@ public abstract class CachingServer extends Server {
 	 * @return boolean to represent status  
 	 */
 	public boolean requestData(int ticksPerRequest, int cacheMiss, 
-			int cacheHit, CachingClient requester, String block) {
+			int localCacheHit, int globalCacheHit, CachingClient requester,
+			String block) {
 		int hash = block.hashCode(); 
 		// check the block in each client cache
 		for(int i = 0; i < nClients; i++) {
 			if(requester.getClientId() != clients[i].getClientId() &&
 					clientContents.get(i).contains(hash)) {
 				ticksPerRequest += networkHopTicks;
-				if(clients[i].requestData(ticksPerRequest, cacheMiss, cacheHit,
-						requester, block, true)) {
+				if(clients[i].requestData(ticksPerRequest, cacheMiss, 
+						localCacheHit, globalCacheHit, requester, block, true)) {
 					return true;
 				}
 			}
@@ -136,13 +144,13 @@ public abstract class CachingServer extends Server {
 			}
 		}
 		if(index != -1) {
-			cacheHit += 1;
+			globalCacheHit += 1;
 			ticksPerRequest += networkHopTicks;
 			if(cacheLRUCount[index] != MAX_LRU_COUNT) {
 				cacheLRUCount[index] += 1;
 			}
 			requester.setResponse(cache.getBlock(index), ticksPerRequest,
-					cacheMiss, cacheHit);
+					cacheMiss, localCacheHit, globalCacheHit);
 			return true;
 		}
 		cacheMiss += 1;
@@ -150,7 +158,7 @@ public abstract class CachingServer extends Server {
 		index = disk.lookup(block);
 		if(index != -1) {
 			requester.setResponse(disk.getBlock(index), ticksPerRequest,
-					cacheMiss, cacheHit);
+					cacheMiss, localCacheHit, globalCacheHit);
 			requester.updateCache(disk.getBlock(index));
 		}
 		return true;

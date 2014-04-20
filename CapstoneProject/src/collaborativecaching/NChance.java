@@ -1,5 +1,7 @@
 package collaborativecaching;
 
+import java.util.List;
+
 import simulation.Block;
 
 /**
@@ -52,5 +54,15 @@ public class NChance extends CachingAlgorithm {
 		((NCServer) server).updateClientContents();
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
+	}
+	
+	/**
+	 * Overridden method to execute NChance
+	 */
+	public void executeExperiment(List<String> requests) {
+		System.out.println("Executing NChance for " + nClients + 
+				" cacheSize = "+ clientCacheSize + " diskSize = " + 
+				serverDiskSize);
+		super.executeExperiment(requests);
 	}
 }

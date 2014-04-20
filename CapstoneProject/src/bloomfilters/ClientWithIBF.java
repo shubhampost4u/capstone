@@ -24,7 +24,7 @@ public class ClientWithIBF extends Client{
 	private int bloomFilterSize;
 	
 	/** Importance function criteria */
-	private final int dataSizeLimit = 10;
+	private final int dataSizeLimit = 12;
 	
 	/** Maximum value that can be stored in bloom filter */
 	private final int M = 7;
@@ -61,7 +61,7 @@ public class ClientWithIBF extends Client{
 	 * 
 	 * @param data query to fired
 	 */
-	public boolean isMember(String data) {
+	public boolean hasMember(String data) {
 		int[] indexes = getHashIndexes(data);
 		for(int i : indexes) {
 			if(iBloomFilter[i] == 0) {
@@ -80,13 +80,13 @@ public class ClientWithIBF extends Client{
 	 * @param block to be updated in cache
 	 */
 	public void updateBF(String block) {
-		if(!isMember(block)) {
+		if(!hasMember(block)) {
 			List<Integer> pIndexes = new ArrayList<Integer>();
 			while(pIndexes.size() != P) {
 				Random random = new Random();
-				int index = random.nextInt() % bloomFilterSize;
-				if(index < 0)
-					index *= (-1);
+				int index = random.nextInt(bloomFilterSize);
+//				if(index < 0)
+//					index *= (-1);
 				if(!pIndexes.contains(index)) {
 					pIndexes.add(index);
 				}

@@ -1,5 +1,7 @@
 package collaborativecaching;
 
+import java.util.List;
+
 import simulation.Block;
 
 /**
@@ -51,5 +53,15 @@ public class GreedyForwarding extends CachingAlgorithm {
 		((GFServer) server).updateClientContents();
 		server.cacheWarmUp(serverCache);
 		server.diskWarmUp(serverDisk);
+	}
+	
+	/**
+	 * Overridden method to execute greedy forwarding
+	 */
+	public void executeExperiment(List<String> requests) {
+		System.out.println("Executing GreedyForwarding for " + nClients + 
+				" cacheSize = "+ clientCacheSize + " diskSize = " + 
+				serverDiskSize);
+		super.executeExperiment(requests);
 	}
 }

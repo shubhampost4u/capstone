@@ -14,7 +14,11 @@ import simulation.Client;
  */
 public class SummaryCache extends CachingAlgorithm {
 
+	 /** Size of bloom filter */
 	private int bloomFilterSize;
+	
+	/** Size of bloom filter as compared to cache size */
+	private static final double BLOOMFILTER_QUOTA = 1.0; 
 	
 	/** 
 	 * Create object for executing Summary Cache algorithm
@@ -33,11 +37,8 @@ public class SummaryCache extends CachingAlgorithm {
 			int networkHopTicks) {
 		super(nClients, clientCacheSize, serverCacheSize, serverDiskSize, 
 				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
-	}
-	
-	
-	public void setBloomFilterSize(int bloomFilterSize) {
-		this.bloomFilterSize = bloomFilterSize;
+		this.bloomFilterSize = (int)(SummaryCache.BLOOMFILTER_QUOTA *
+				(double)this.clientCacheSize);
 	}
 	
 	/**
@@ -49,37 +50,28 @@ public class SummaryCache extends CachingAlgorithm {
 	 */
 	public void warmup(Block[][] clientCaches, Block[] serverCache,
 			Block[] serverDisk) {
-		clients = new Client[nClients];
-		server = new ServerWithIBF(serverCacheSize, bloomFilterSize,
-				serverDiskSize, 1);
-		server.cacheWarmUp(serverCache);
-		server.diskWarmUp(serverDisk);
-		
+		clients = new SCClient[nClients];
+		server = new SCServer(1, serverCacheSize, serverDiskSize,
+				cacheReferenceTicks, diskToCacheTicks, networkHopTicks);
 		for(int i = 0; i < nClients; i++) {
-			clients[i] = new ClientWithIBF(clientCacheSize, bloomFilterSize, i);
+			clients[i] = new SCClient(i, clientCacheSize, cacheReferenceTicks,
+					networkHopTicks, (SCServer)server);
+			((SCClient) clients[i]).setBloomFilterSize(bloomFilterSize);
 			clients[i].cacheWarmUp(clientCaches[i]);
 		}
+		for(int i = 0; i < nClients; i++) {
+			((SCClient) clients[i]).setPeers(clients);
+		}
+//		((SCServer) server).updateClients((SCClient[])clients);
+		server.cacheWarmUp(serverCache);
+		server.diskWarmUp(serverDisk);
 	}
+	
 	@Override
 	public void executeExperiment(List<String> requests) {
+		System.out.println("Executing SummaryCache for " + nClients + 
+				" cacheSize = "+ clientCacheSize + " diskSize = " + 
+				serverDiskSize);
+		super.executeExperiment(requests);
 	}
-
-	@Override
-	public double getTicksPerRequest() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getCacheMiss() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getCacheHit() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 }

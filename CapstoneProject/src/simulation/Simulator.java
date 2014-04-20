@@ -61,6 +61,7 @@ public class Simulator {
 	/** Type of experiment */
 	private int experimentType;
 
+	private int totalRequests;
 	/** File containing data to be added to the client/server storage */
 	private String dataFile;
 
@@ -106,6 +107,8 @@ public class Simulator {
 				.getProperty("cacheSizeRampUp"));
 		serverDiskSize = Integer.parseInt(properties
 				.getProperty("serverDiskSize"));
+		totalRequests = Integer.parseInt(properties
+				.getProperty("totalRequests"));
 		cacheReferenceTicks = Integer.parseInt(properties
 				.getProperty("cacheReferenceTicks"));
 		diskToCacheTicks = Integer.parseInt(properties
@@ -255,6 +258,7 @@ public class Simulator {
 				+ "_result_1.csv");
 		double[] requestPercentage = { 0.5, 1.0, 1.5 };
 		FileWriter writer = new FileWriter(resultFile, true);
+		// varying cache sizes
 		while (cacheSizeRampUp > 0 && cacheSize <= cacheSizeHigh) {
 			int totalCacheSize = (nClients + 1) * cacheSize;
 			warmup(cacheSize, cacheSize, nClients);
@@ -307,11 +311,13 @@ public class Simulator {
 	 */
 	private void cachingComparison() {
 		FileWriter writer = null;
-		double[] diskPercentage = { 0.5, 1.0, 2.0 };
 		// headers in result file
-		String[] headers = { "nClients", "GFTicks", "GFcacheMiss",
-				"GFcacheHit", "NCTicks", "NCcacheMiss", "NCcacheHit",
-				"RHTicks", "RHcacheMiss", "RHcacheHit" };
+		String[] headers = { "nClients", "GFTicks", "GFCacheMiss",
+				"GFlocalCacheHit","GFglobalCacheHit", "NCTicks", "NCcacheMiss",
+				"NClocalCacheHit", "NCglobalCacheHit", "RHTicks" ,
+				"RHcacheMiss", "RHlocalCacheHit", "RHglobalCacheHit",
+				"SCTicks", "SCcacheMiss", "SClocalCacheHit" ,"SCglobalCacheHit"
+				};
 		File resultFile = new File(getFileNameWithoutExt(dataFile)
 				+ "_caching_comparison.csv");
 		try {
@@ -321,17 +327,11 @@ public class Simulator {
 			}
 			writer.write("\n");
 			System.out.println("Starting Caching Algorithms Comparison");
-			// for varying disk percentage
-			for (double per : diskPercentage) {
-				int nClients = nClientsLow;
-				writer.write("diskSize = " + per + " * cacheSize");
-				// for varying number of clients
-				while (nClientsRampUp > 0 && nClients <= nClientsHigh) {
-					writer.write("\n" + nClients);
-					cachingComparisonRound(nClients, per, writer);
-					nClients += nClientsRampUp;
-				}
-				writer.write("\n");
+			int nClients = nClientsLow;
+			while(nClientsRampUp > 0 && nClients <= nClientsHigh) {
+				writer.write("\n" + nClients);
+				cachingComparisonRound(nClients, 0.0, writer);
+				nClients += nClientsRampUp;
 			}
 			System.out.println("Ending Caching Algorithms Comparison");
 		} catch (IOException e) {
@@ -351,60 +351,59 @@ public class Simulator {
 	 * executes the experiment on all the caching algorithms for varying cache
 	 * size. Finally store the results to file.
 	 * 
-	 * @param nClients total clients in the system
-	 * @param per percentage disk to be used compared to total cache size
-	 * @param writer file writer
+	 * @param nClients
+	 *            total clients in the system
+	 * @param per
+	 *            percentage disk to be used compared to total cache size
+	 * @param writer
+	 *            file writer
 	 * 
 	 * @throws IOException
 	 */
 	private void cachingComparisonRound(int nClients, double per,
 			FileWriter writer) throws IOException {
-		int totalRounds = (cacheSizeHigh - cacheSizeLow + cacheSizeRampUp)
-				/ (cacheSizeRampUp);
-
-		// for all the caching algorithms
-		for (AlgorithmType type : AlgorithmType.values()) {
+		List<String> reqPool = randomWarmup(cacheSizeLow, cacheSizeLow, 
+				totalRequests, nClients);
+		for(AlgorithmType type : AlgorithmType.values()) {
 			double ticksPerRequest = 0.0;
 			double cacheMiss = 0.0;
-			double cacheHit = 0.0;
-			int cacheSize = cacheSizeLow;
-			// for varying cache size
-			while (cacheSizeRampUp > 0 && cacheSize <= cacheSizeHigh) {
-				int totalCacheSize = (nClients + 1) * cacheSize;
-				int diskSize = (int) (per * (double) totalCacheSize);
-				int requests = diskSize + totalCacheSize;
-				CachingAlgorithm ca = CachingAlgorithmFactory
-						.createCachingAlgorithm(type, nClients, cacheSize,
-								cacheSize, diskSize, cacheReferenceTicks,
-								diskToCacheTicks, networkHopTicks);
-				if (ca != null) {
-					List<String> reqPool = randomWarmup(cacheSize, cacheSize,
-							diskSize, nClients);
-					ca.warmup(clientCaches, serverCache, serverDisk);
-					ca.executeExperiment(getRequests(requests, reqPool));
-					ticksPerRequest += ca.getTicksPerRequest();
-					cacheHit += ca.getCacheHit();
-					cacheMiss += ca.getCacheMiss();
-				}
-				cacheSize += cacheSizeRampUp;
+			double localCacheHit = 0.0;
+			double globalCacheHit = 0.0;
+			CachingAlgorithm ca = CachingAlgorithmFactory
+					.createCachingAlgorithm(type, nClients, cacheSizeLow,
+							cacheSizeLow, totalRequests, cacheReferenceTicks,
+							diskToCacheTicks, networkHopTicks);
+			if (ca != null) {
+				ca.warmup(clientCaches, serverCache, serverDisk);
+				ca.executeExperiment(reqPool);
+				ticksPerRequest += ca.getTicksPerRequest();
+				localCacheHit += ca.getLocalCacheHit();
+				globalCacheHit += ca.getGlobalCacheHit();
+				cacheMiss += ca.getCacheMiss();
 			}
 			writer.write(","
-					+ String.format("%.2f", ticksPerRequest
-							/ (double) totalRounds) + ","
-					+ String.format("%.2f", cacheMiss / (double) totalRounds)
-					+ ","
-					+ String.format("%.2f", cacheHit / (double) totalRounds));
+			+ String.format("%.2f", ticksPerRequest)
+			+ ","
+			+ String.format("%.2f", cacheMiss)
+			+ ","
+			+ String.format("%.2f", localCacheHit)
+			+ "," 
+			+ String.format("%.2f", globalCacheHit));
 		}
 	}
 
 	/**
-	 * This method creates the random distribution of client caches, server 
+	 * This method creates the random distribution of client caches, server
 	 * cache and server disk
 	 * 
-	 * @param clientCacheSize cache size of client
-	 * @param serverCacheSize cache size of server
-	 * @param serverDiskSize disk size of server
-	 * @param nClients total clients in the system
+	 * @param clientCacheSize
+	 *            cache size of client
+	 * @param serverCacheSize
+	 *            cache size of server
+	 * @param serverDiskSize
+	 *            disk size of server
+	 * @param nClients
+	 *            total clients in the system
 	 * 
 	 * @return List of requests
 	 */
@@ -416,41 +415,41 @@ public class Simulator {
 		clientCaches = new Block[nClients][clientCacheSize];
 		serverCache = new Block[serverCacheSize];
 		serverDisk = new Block[serverDiskSize];
-		// client cache data
-		for (int i = 0; i < nClients; i++) {
-			index = 0;
-			while (contents.size() != clientCacheSize) {
-				Block block = new Block(dataList.get(new Random()
-						.nextInt((dataList.size()))));
-				if (!contents.contains(block)) {
-					contents.add(block);
-					requests.add(block.getData());
-					clientCaches[i][index++] = block;
-				}
-			}
-			contents.clear();
-		}
-		index = 0;
-		// server cache data
-		while (contents.size() != serverCacheSize) {
-			Block block = new Block(dataList.get(new Random().nextInt((dataList
-					.size()))));
-			if (!contents.contains(block)) {
-				contents.add(block);
-				requests.add(block.getData());
-				serverCache[index++] = block;
-			}
-		}
-		contents.clear();
-		index = 0;
+		Random random = new Random();
 		// server disk data
 		while (contents.size() != serverDiskSize) {
-			Block block = new Block(dataList.get(new Random().nextInt((dataList
+			Block block = new Block(dataList.get(random.nextInt((dataList
 					.size()))));
 			if (!contents.contains(block)) {
 				contents.add(block);
 				requests.add(block.getData());
 				serverDisk[index++] = block;
+			}
+		}
+		// client cache data
+		for (int i = 0; i < nClients; i++) {
+			index = 0;
+			contents.clear();
+			while (contents.size() != clientCacheSize) {
+				Block block = serverDisk[random.nextInt(serverDiskSize)];
+				if (!contents.contains(block)) {
+					contents.add(block);
+					requests.add(block.getData());
+					block.isCached = true;
+					clientCaches[i][index++] = block;
+				}
+			}
+		}
+		index = 0;
+		contents.clear();
+		// server cache data
+		while (contents.size() != serverCacheSize) {
+			Block block = serverDisk[random.nextInt(serverDiskSize)];
+			if (!contents.contains(block)) {
+				contents.add(block);
+				requests.add(block.getData());
+				block.isCached = true;
+				serverCache[index++] = block;
 			}
 		}
 		return requests;
@@ -460,8 +459,7 @@ public class Simulator {
 	 * Distribute the data in dataList read from file to all the client caches,
 	 * server cache and server disk
 	 */
-	private void warmup(int clientCacheSize, int serverCacheSize,
-			int nClients) {
+	private void warmup(int clientCacheSize, int serverCacheSize, int nClients) {
 		int serverCacheIndex = 0;
 		int serverDiskIndex = 0;
 		int serverCacheStartIndex = (nClients * clientCacheSize);

@@ -112,7 +112,7 @@ public class BloomFilter {
 				}
 				if(!coveredClients.contains(clientIndex)) {
 					// check bloom filter
-					if(clients[clientIndex].isMember(request)) {
+					if(clients[clientIndex].hasMember(request)) {
 						if(clients[clientIndex].cacheLookup(request) == -1) {
 							falsePositive += 1;
 						} else {

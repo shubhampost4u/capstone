@@ -39,14 +39,14 @@ public class CachingAlgorithmFactory {
 					diskToCacheTicks, networkHopTicks);
 			break;
 		case Robinhood:
-//			ca = new RobinHood(nClients, clientCacheSize,
-//					serverCacheSize, serverDiskSize, cacheReferenceTicks,
-//					diskToCacheTicks, networkHopTicks);
+			ca = new RobinHood(nClients, clientCacheSize,
+					serverCacheSize, serverDiskSize, cacheReferenceTicks,
+					diskToCacheTicks, networkHopTicks);
 			break;
 		case SummaryCache:
-//			ca = new SummaryCache(nClients, clientCacheSize,
-//					serverCacheSize, serverDiskSize, cacheReferenceTicks,
-//					diskToCacheTicks, networkHopTicks);
+			ca = new SummaryCache(nClients, clientCacheSize,
+					serverCacheSize, serverDiskSize, cacheReferenceTicks,
+					diskToCacheTicks, networkHopTicks);
 			break;
 		default:
 			break;

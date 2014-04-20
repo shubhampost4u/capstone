@@ -54,11 +54,15 @@ public abstract class CachingAlgorithm {
 	/** Ticks required for satisfying each requests */
 	protected double ticksPerRequest;
 	
-	/** Cache Hit ratio per request */
-	protected double cacheHitPerRequest;
+	/** Local Cache Hit ratio per request */
+	protected double localCacheHitPerRequest;
+	
+	/** Global Cache Hit ratio per request */
+	protected double globalCacheHitPerRequest;
 	
 	/** Cache Miss ratio per request */
 	protected double cacheMissPerRequest;
+	
 
 	/** 
 	 * Create object for executing caching algorithm
@@ -173,20 +177,23 @@ public abstract class CachingAlgorithm {
 	 * @param requests list of requests to be fired on clients
 	 */
 	public void executeExperiment(List<String> requests) {
-		int cacheHit = 0;
+		int localCacheHit = 0;
+		int globalCacheHit = 0;
 		int cacheMiss = 0;
 		int ticks  = 0;
 		for(String request : requests) {
 			CachingClient client = ((CachingClient)clients
 					[new Random().nextInt(nClients)]); 
-			client.requestData(0, 0, 0, null, request, false);
+			client.requestData(0, 0, 0, 0, null, request, false);
 			ticks += client.getResponseCost();
 			cacheMiss += client.getCacheMiss();
-			cacheHit += client.getCacheHit();
+			localCacheHit += client.getLocalCacheHit();
+			globalCacheHit += client.getGlobalCacheHit();
 		}
 		ticksPerRequest = (double) ticks / (double)requests.size();
 		cacheMissPerRequest = (double) cacheMiss / (double) requests.size();
-		cacheHitPerRequest = (double) cacheHit / (double) requests.size();
+		localCacheHitPerRequest = (double) localCacheHit / (double) requests.size();
+		globalCacheHitPerRequest = (double) globalCacheHit / (double) requests.size();
 	}
 	
 	/**
@@ -209,8 +216,12 @@ public abstract class CachingAlgorithm {
 	 * Method to return cache hit ratio
 	 * @return cache hit ratio
 	 */
-	public double getCacheHit() {
-		return cacheHitPerRequest;
+	public double getLocalCacheHit() {
+		return localCacheHitPerRequest;
+	}
+	
+	public double getGlobalCacheHit() {
+		return globalCacheHitPerRequest;
 	}
 	
 	/**

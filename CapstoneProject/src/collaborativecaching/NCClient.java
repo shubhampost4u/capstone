@@ -120,40 +120,38 @@ public class NCClient extends CachingClient {
 	 * @return boolean to represent status  
 	 */
 	public boolean requestData(int ticksPerRequest, int cacheMiss, 
-			int cacheHit, CachingClient requester, String block,
-			boolean sentByServer) {
+			int localCacheHit, int globalCacheHit, CachingClient requester,
+			String block, boolean sentByServer) {
 		int index = cacheLookup(block);
 		ticksPerRequest += cacheReferenceTicks;
 		if(requester == null) {
 			requester = this;
 		}
-		// reduce the LRU count of each cache element after cache reference
-		for(int i = 0; i < cacheLRUCount.length; i++) {
-			if(i != index && cacheLRUCount[i] > 0) {
-				cacheLRUCount[i] -= 1;
-			}
-		}
+		decrementCacheLRU(index);
 		// if found in current client cache the return to requester
 		if(index != -1) {
 			ticksPerRequest += networkHopTicks;
-			cacheHit += 1;
+			if(requester.getClientId() == this.clientId)
+				localCacheHit += 1;
+			else
+				globalCacheHit += 1;
 			if(cacheLRUCount[index] != MAX_LRU_COUNT) {
 				cacheLRUCount[index] += 1;
 			}
 			if(cache.getBlock(index).recirculationCount > -1) {
 				cache.getBlock(index).recirculationCount = 
-						NCClient.reCirculationCount;
+						NCClient.reCirculationCount; 
 			}
 			requester.setResponse(cache.getBlock(index), ticksPerRequest,
-					cacheMiss, cacheHit);
+					cacheMiss, localCacheHit, globalCacheHit);
 		} else {
-			if(sentByServer) {
+			if (sentByServer) {
 				server.updateClientContents();
 				return false;
 			}
 			ticksPerRequest += networkHopTicks;
-			return server.requestData(ticksPerRequest, cacheMiss, cacheHit,
-					requester, block);
+			return server.requestData(ticksPerRequest, cacheMiss, localCacheHit,
+					globalCacheHit, requester, block);
 		}
 		return true;
 	}
@@ -162,7 +160,7 @@ public class NCClient extends CachingClient {
 	 * Check for the data in client cache
 	 */
 	@Override
-	public boolean isMember(String data) {
+	public boolean hasMember(String data) {
 		return (cacheLookup(data) != -1);
 	}
 

@@ -39,7 +39,7 @@ public class ClientWithBF extends Client {
 	 * 
 	 * @param data query to fired
 	 */
-	public boolean isMember(String data) {
+	public boolean hasMember(String data) {
 		int[] result = getHashIndexes(data);
 		for(int i : result) {
 			if(bloomFilter[i] == 0) {

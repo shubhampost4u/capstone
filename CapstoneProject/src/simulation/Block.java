@@ -1,5 +1,8 @@
 package simulation;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Represents data block in a cache or disk
  * 
@@ -12,6 +15,12 @@ public class Block implements Comparable<Block>{
 	/** Recirculation count of block */
 	public int recirculationCount;
 	
+	/** Clients who has cached this block */
+	public Set<Long> clients;
+	
+	/** Boolean to represent the cached status of this block */
+	public boolean isCached;
+	
 	/**
 	 * Creates object storing data
 	 * 
@@ -20,6 +29,8 @@ public class Block implements Comparable<Block>{
 	public Block(String data) {
 		this.data = data;
 		this.recirculationCount = -1;
+		this.clients = new HashSet<Long>();
+		isCached = false;
 	}
 	
 	/**
@@ -27,7 +38,7 @@ public class Block implements Comparable<Block>{
 	 * 
 	 * @return Block data
 	 */
-	public String getData() {
+	public String getData() {		
 		return data;
 	}
 	
@@ -55,5 +66,9 @@ public class Block implements Comparable<Block>{
 	@Override
 	public int compareTo(Block block) {
 		return this.data.compareTo(block.getData());
+	}
+	
+	public int hashCode() {
+		return this.data.hashCode();
 	}
 }

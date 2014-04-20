@@ -54,7 +54,7 @@ public class GFClient extends CachingClient {
 	 * Check for the data in client cache
 	 */
 	@Override
-	public boolean isMember(String data) {
-		return false;
+	public boolean hasMember(String data) {
+		return cache.lookup(data) == -1;
 	}
 }

@@ -59,7 +59,7 @@ public abstract class Client {
 	 * 
 	 * @param data query to fired
 	 */
-	public abstract boolean isMember(String data);
+	public abstract boolean hasMember(String data);
 	
 	/**
 	 * Get the client id
@@ -75,5 +75,9 @@ public abstract class Client {
 	
 	public Block getCacheBlock(int index) {
 		return cache.getBlock(index);
+	}
+	
+	public boolean equals(Object client) {
+		return this.clientId == ((Client)client).getClientId();
 	}
 }

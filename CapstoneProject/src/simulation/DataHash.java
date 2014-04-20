@@ -115,8 +115,10 @@ public class DataHash {
 	}
 	
 //	public static void main(String[] args) {
-//		DataHash dh1 = new DataHash("123abc");
-//		DataHash dh2 = new DataHash("a123bc");
+//		DataHash dh1 = new DataHash("A Ratra");
+//		DataHash dh2 = new DataHash("Aaqib Javed Sheikhupura  Punjab");
+//		System.out.println(dh1.sha1());
+//		System.out.println(dh2.sha1());
 //		System.out.println(dh1.sha256());
 //		System.out.println(dh1.sha1());
 //		System.out.println(dh1.sha384());

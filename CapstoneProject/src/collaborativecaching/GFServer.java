@@ -51,6 +51,6 @@ public class GFServer extends CachingServer {
 		
 	@Override
 	public boolean isMember(String data) {
-		return false;
+		return cache.lookup(data) == -1;
 	}
 }
