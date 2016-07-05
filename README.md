@@ -5,6 +5,7 @@ Introduction
 Bloom Filter	
 
 	Bloom Filter [4] is a memory efficient probabilistic data structure which might give a false positive result to set (S. Tarkoma, 2012)membership queries. False positives occur when an element is not a member of a given set but a set membership query returns true. Bloom Filter is basically an array of bits representing set elements. Multiple hash functions are used to map items in a set to bits in bloom filter.  
+	
 	Let’s say there are n data items to be inserted in the set, there is an array of m bits with all the bits set to 0 and k hash functions. Whenever an element needs to be added in the set, that element is passed to the hash functions to get k values in the range of [0, m). These k values are used as indices and every bit at these k indices is set to 1. To check if any element is present in the set, that element is passed to the k hash functions getting k indices. If all the bits at these positions are set in the array, then the element is present in the set. This technique might result into false positives.  
 
 Real World Example
