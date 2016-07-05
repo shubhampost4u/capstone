@@ -59,7 +59,7 @@
 	The scope of this project is restricted to comparison of cooperative caching algorithms and Bloom Filter variants. These algorithms have already been proposed, but I will be modifying the Summary Cache algorithm to use Importance Aware Bloom Filter. This modified Summary Cache will then be compared to Greedy Forwarding, N-chance and Robinhood. My contribution through this project is to analyze the efficiency of this modified Summary Cache over other algorithms.
 
 <b>References:</b><br/>
-[1] Li Fan, P. C. (2000). Summary cache: a scalable wide-area web cache sharing protocol. IEEE/ACM (pp. 281-293). IEEE/ACM.
-[2] Ming Zhong, P. L. (2008). Optimizing Data Popularity Concious bloom filters. PODC '08 Proceedings of the twenty-seventh ACM symposium on Principles of distributed computing. ACM.
-[3] Puru Kulkarni, R. B. (2013). Importance-aware Bloom Filter for Set Membership Queries in Streaming Data. COMSNETS, 2013 Fifth International Conference. COMSNETS.
+[1] Li Fan, P. C. (2000). Summary cache: a scalable wide-area web cache sharing protocol. IEEE/ACM (pp. 281-293). IEEE/ACM.<br/>
+[2] Ming Zhong, P. L. (2008). Optimizing Data Popularity Concious bloom filters. PODC '08 Proceedings of the twenty-seventh ACM symposium on Principles of distributed computing. ACM.<br/>
+[3] Puru Kulkarni, R. B. (2013). Importance-aware Bloom Filter for Set Membership Queries in Streaming Data. COMSNETS, 2013 Fifth International Conference. COMSNETS.<br/>
 [4] S. Tarkoma, C. E. (2012). Theory and Practice of Bloom Filters for Distributed Systems. IEEE Communications Surveys and Tutorials. Vol. 14, Number 1. IEEE.
